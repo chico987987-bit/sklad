@@ -1,0 +1,2 @@
+# sklad
+Sofwul sklad aplikace
