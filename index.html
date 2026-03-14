@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sofwul Sklad</title>
+<meta name="theme-color" content="#0e0e0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Sofwul Sklad">
+<link rel="manifest" id="pwa-manifest">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/zxing/0.19.1/umd/index.min.js"></script>
+<style>
+:root{--bg:#0e0e0f;--surface:#161618;--surface2:#1e1e21;--border:#2a2a2e;--gold:#c9a84c;--gold-dim:#a07830;--text:#e8e6e1;--text-dim:#888880;--red:#e05555;--green:#55a878;}
+body.light{--bg:#f4f3ef;--surface:#ffffff;--surface2:#f0efe9;--border:#dddbd4;--text:#1a1a18;--text-dim:#888070;--gold:#a07830;--gold-dim:#c9a84c;}
+.theme-btn{background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-size:15px;padding:5px 9px;cursor:pointer;transition:all .2s;}
+.theme-btn:active{background:var(--surface2);}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 18px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;}
+.header-title{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:.06em;}
+.header-title span{color:var(--gold);}
+.hdr-right{text-align:right;}
+.hdr-count{font-family:'Instrument Sans',Arial,sans-serif;font-size:17px;font-weight:700;color:var(--gold);line-height:1;}
+.hdr-label{font-size:10px;color:var(--text-dim);letter-spacing:.06em;text-transform:uppercase;}
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:52px;z-index:99;}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--text-dim);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;letter-spacing:.07em;text-transform:uppercase;}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.page{display:none;padding:13px;padding-bottom:30px;}
+.page.active{display:block;}
+.filter-bar{display:flex;gap:7px;margin-bottom:11px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.filter-bar::-webkit-scrollbar{display:none;}
+.filter-chip{flex-shrink:0;padding:6px 13px;border-radius:20px;font-size:11px;font-weight:600;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.filter-chip.active{background:rgba(201,168,76,.15);border-color:var(--gold-dim);color:var(--gold);}
+.search-bar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 13px;width:100%;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;margin-bottom:11px;outline:none;transition:border-color .2s;}
+.search-bar:focus{border-color:var(--gold-dim);}
+.search-bar::placeholder{color:var(--text-dim);}
+.dept-header{display:flex;align-items:center;gap:9px;margin:15px 0 7px;}
+.dept-icon{font-size:14px;}
+.dept-name{font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);}
+.dept-line{flex:1;height:1px;background:var(--border);}
+.dept-count{font-size:11px;color:var(--text-dim);background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:10px;}
+.brand-lbl{font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;padding:5px 0 4px 2px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.product-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.product-header{display:flex;align-items:stretch;cursor:pointer;}
+.product-thumb{width:64px;min-height:64px;flex-shrink:0;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;}
+.product-thumb img{width:100%;height:100%;object-fit:cover;}
+.product-main{padding:9px 11px;flex:1;min-width:0;}
+.product-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.product-summary{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.var-count{font-size:11px;color:var(--text-dim);}
+.expand-btn{padding:0 13px;display:flex;align-items:center;color:var(--text-dim);font-size:13px;transition:transform .25s;flex-shrink:0;border-left:1px solid var(--border);}
+.expand-btn.open{transform:rotate(180deg);}
+.stock-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.stock-ok{background:rgba(85,168,120,.15);color:var(--green);border:1px solid rgba(85,168,120,.3);}
+.stock-low{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
+.stock-zero{background:rgba(224,85,85,.15);color:var(--red);border:1px solid rgba(224,85,85,.3);}
+.variants-panel{display:none;border-top:1px solid var(--border);}
+.variants-panel.open{display:block;}
+.variant-row{display:flex;align-items:center;gap:9px;padding:9px 12px;border-bottom:1px solid var(--border);}
+.variant-row:last-of-type{border-bottom:none;}
+.variant-info{flex:1;min-width:0;}
+.variant-attrs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;}
+.attr-tag{font-size:11px;padding:2px 8px;border-radius:7px;font-weight:500;}
+.attr-p{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);color:var(--gold);}
+.attr-s{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);}
+.variant-meta{display:flex;align-items:center;gap:7px;}
+.variant-price{font-size:11px;color:var(--text-dim);margin-left:auto;}
+.del-var{background:none;border:none;color:var(--text-dim);font-size:15px;cursor:pointer;padding:3px;flex-shrink:0;}
+.del-var:active{color:var(--red);}
+.add-var-row{padding:9px 12px;background:rgba(201,168,76,.03);}
+.add-var-btn{width:100%;padding:8px;background:none;border:1px dashed var(--border);border-radius:7px;color:var(--text-dim);font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;}
+.add-var-btn:active{border-color:var(--gold-dim);color:var(--gold);}
+.qv-form{padding:11px 12px;background:var(--surface2);border-top:1px solid var(--border);display:none;}
+.qv-form.open{display:block;}
+.qf-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:9px;}
+.qf-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px;}
+.qf-lbl{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.qf-inp{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px;width:100%;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;outline:none;}
+.qf-inp:focus{border-color:var(--gold-dim);}
+.qf-btns{display:flex;gap:7px;margin-top:4px;}
+.qf-save{flex:1;padding:8px;background:var(--gold);color:#0e0e0f;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer;}
+.qf-cancel{padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text-dim);font-size:11px;cursor:pointer;}
+.del-product-row{padding:8px 12px;border-top:1px solid var(--border);text-align:right;}
+.del-product-btn{background:none;border:none;color:var(--red);font-size:11px;font-weight:600;cursor:pointer;opacity:.5;}
+.del-product-btn:active{opacity:1;}
+/* STEP FORM */
+.step-indicator{display:flex;align-items:flex-start;margin-bottom:18px;}
+.step-w{display:flex;flex-direction:column;align-items:center;}
+.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;background:var(--surface2);border:2px solid var(--border);color:var(--text-dim);transition:all .3s;flex-shrink:0;}
+.step-dot.active{background:var(--gold);border-color:var(--gold);color:#0e0e0f;}
+.step-dot.done{background:var(--green);border-color:var(--green);color:#fff;}
+.step-line{flex:1;height:2px;background:var(--border);transition:background .3s;margin-top:12px;}
+.step-line.done{background:var(--green);}
+.step-lbl{font-size:9px;color:var(--text-dim);text-align:center;letter-spacing:.05em;text-transform:uppercase;margin-top:3px;white-space:nowrap;}
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+.dept-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:4px;}
+.dept-tile{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:17px 10px;text-align:center;cursor:pointer;transition:all .2s;}
+.dept-tile.selected{border-color:var(--gold);background:rgba(201,168,76,.07);}
+.dept-tile-icon{font-size:28px;margin-bottom:6px;}
+.dept-tile-name{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;}
+.dept-tile-count{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.brand-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+.brand-chip{padding:8px 14px;border-radius:9px;background:var(--surface);border:2px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.brand-chip.selected{border-color:var(--gold);background:rgba(201,168,76,.09);color:var(--gold);}
+.brand-chip.add-new{border-style:dashed;color:var(--text-dim);}
+.cb-box{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px;margin-bottom:11px;display:none;}
+.cb-box.open{display:block;}
+.cb-row{display:flex;gap:7px;}
+.cb-inp{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;outline:none;}
+.cb-inp:focus{border-color:var(--gold-dim);}
+.cb-add{padding:8px 14px;background:var(--gold);color:#0e0e0f;border:none;border-radius:7px;font-weight:700;font-size:14px;cursor:pointer;}
+.sel-bar{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.18);border-radius:9px;padding:9px 13px;margin-bottom:13px;display:flex;align-items:center;gap:9px;font-size:13px;}
+.sel-bar-icon{font-size:16px;}
+.sel-bar-change{font-size:11px;color:var(--gold);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;white-space:nowrap;}
+.form-section{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px;margin-bottom:11px;}
+.form-section-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.form-group{margin-bottom:10px;}
+.form-group:last-child{margin-bottom:0;}
+.form-label{display:block;font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 12px;width:100%;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--gold-dim);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.photo-upload{border:2px dashed var(--border);border-radius:9px;padding:15px;text-align:center;cursor:pointer;position:relative;overflow:hidden;}
+.photo-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.photo-icon{font-size:24px;margin-bottom:5px;}
+.photo-txt{font-size:11px;color:var(--text-dim);}
+.photo-preview{width:100%;max-height:140px;object-fit:cover;border-radius:7px;display:none;margin-top:8px;}
+/* VARIANT BUILDER */
+.vf-attr-row{display:grid;gap:8px;margin-bottom:8px;}
+.vf-attr-hint{font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.4;padding:8px 10px;background:var(--surface2);border-radius:7px;}
+.variants-list{margin-bottom:10px;}
+.vli{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:5px;display:flex;align-items:center;gap:8px;}
+.vli-tags{flex:1;display:flex;gap:5px;flex-wrap:wrap;}
+.vli-rm{background:none;border:none;color:var(--text-dim);font-size:15px;cursor:pointer;}
+.vli-rm:active{color:var(--red);}
+.add-vf-btn{width:100%;padding:9px;background:none;border:1px dashed var(--border);border-radius:7px;color:var(--text-dim);font-family:'Syne',sans-serif;font-weight:700;font-size:10px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;margin-bottom:3px;}
+.add-vf-btn:active{border-color:var(--gold-dim);color:var(--gold);}
+.step-nav{display:flex;gap:9px;margin-top:5px;}
+.btn-back{flex:0 0 auto;padding:11px 15px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:var(--text-dim);font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.btn-next{flex:1;padding:11px;background:var(--gold);color:#0e0e0f;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.btn-next:active{background:var(--gold-dim);}
+.btn-next:disabled{background:var(--surface2);color:var(--text-dim);cursor:default;}
+.btn-submit{width:100%;padding:13px;background:var(--gold);color:#0e0e0f;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:all .2s;margin-bottom:7px;}
+.btn-submit:active{background:var(--gold-dim);}
+.btn-submit:disabled{background:var(--surface2);color:var(--text-dim);cursor:default;}
+.btn-reset{width:100%;padding:11px;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;}
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:13px;}
+.stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:5px;}
+.stat-value{font-family:'Instrument Sans',Arial,sans-serif;font-size:28px;font-weight:700;color:var(--gold);}
+.stat-sub{font-size:10px;color:var(--text-dim);margin-top:2px;}
+.dept-stat{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:13px;margin-bottom:7px;display:flex;align-items:center;gap:12px;}
+.dept-stat-icon{font-size:20px;width:34px;text-align:center;}
+.dept-stat-info{flex:1;}
+.dept-stat-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:2px;}
+.dept-stat-detail{font-size:11px;color:var(--text-dim);line-height:1.4;}
+.dept-stat-count{font-family:'Instrument Sans',Arial,sans-serif;font-size:17px;font-weight:700;color:var(--gold);}
+.export-section{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px;margin-top:13px;}
+/* LOW STOCK */
+.low-stock-section{background:var(--surface);border:1px solid rgba(201,168,76,.3);border-radius:11px;margin-top:13px;overflow:hidden;}
+.low-stock-header{display:flex;align-items:center;padding:13px 15px;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.06em;color:var(--gold);gap:4px;}
+.low-stock-header:active{background:rgba(201,168,76,.05);}
+.low-stock-arrow{margin-left:auto;font-size:11px;color:var(--text-dim);transition:transform .25s;}
+.low-stock-arrow.open{transform:rotate(180deg);}
+.low-stock-body{display:none;border-top:1px solid var(--border);}
+.low-stock-body.open{display:block;}
+.ls-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);}
+.ls-row:last-child{border-bottom:none;}
+.ls-icon{font-size:14px;flex-shrink:0;}
+.ls-info{flex:1;min-width:0;}
+.ls-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ls-variant{font-size:11px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ls-qty{font-family:'Instrument Sans',Arial,sans-serif;font-weight:700;font-size:14px;flex-shrink:0;}
+.ls-empty{padding:16px 14px;font-size:12px;color:var(--text-dim);text-align:center;}
+.export-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.export-desc{font-size:12px;color:var(--text-dim);margin-bottom:11px;line-height:1.5;}
+.btn-export{width:100%;padding:12px;background:var(--gold);color:#0e0e0f;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
+.empty-state-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
+.empty-state-text{font-size:13px;line-height:1.6;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:1000;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* VYSKLADNIT / NASKLADNIT BUTTONS */
+.vyskl-btn{background:none;border:1px solid rgba(224,85,85,.35);border-radius:6px;color:var(--red);font-size:10px;font-weight:700;padding:3px 8px;cursor:pointer;letter-spacing:.05em;flex-shrink:0;}
+.vyskl-btn:active{background:rgba(224,85,85,.12);}
+.naskl-btn{background:none;border:1px solid rgba(85,168,120,.35);border-radius:6px;color:var(--green);font-size:10px;font-weight:700;padding:3px 8px;cursor:pointer;letter-spacing:.05em;flex-shrink:0;}
+.naskl-btn:active{background:rgba(85,168,120,.12);}
+/* SCANNER */
+.scan-btn{background:none;border:1px solid var(--border);border-radius:0 7px 7px 0;padding:0 11px;color:var(--gold);font-size:18px;cursor:pointer;flex-shrink:0;margin-left:-1px;transition:background .15s;}
+.scan-btn:active{background:rgba(201,168,76,.1);}
+.ean-wrap{display:flex;}
+.ean-wrap .form-input,.ean-wrap .qf-inp{border-radius:7px 0 0 7px;flex:1;}
+.scanner-overlay{position:fixed;inset:0;background:#000;z-index:300;display:none;flex-direction:column;}
+.scanner-overlay.open{display:flex;}
+.scanner-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:rgba(0,0,0,.8);}
+.scanner-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#fff;}
+.scanner-close{background:none;border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;padding:8px 14px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.scanner-viewport{flex:1;position:relative;overflow:hidden;}
+#scanner-video{width:100%;height:100%;object-fit:cover;}
+.scanner-guide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
+.scanner-box{width:260px;height:160px;border:2px solid var(--gold);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.5);position:relative;}
+.scanner-line{position:absolute;left:8px;right:8px;top:50%;height:2px;background:var(--gold);opacity:.8;animation:scan-line 1.8s ease-in-out infinite;}
+@keyframes scan-line{0%,100%{top:20%}50%{top:80%}}
+.scanner-hint{position:absolute;bottom:0;left:0;right:0;text-align:center;padding:14px;background:rgba(0,0,0,.7);color:rgba(255,255,255,.7);font-size:13px;}
+.scanner-result{padding:14px 18px;background:rgba(0,0,0,.85);text-align:center;display:none;}
+.scanner-result.show{display:block;}
+.scanner-found{color:var(--green);font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:4px;}
+.scanner-ean{color:rgba(255,255,255,.7);font-family:monospace;font-size:13px;}
+.rename-row{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;}
+.rename-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:'Syne',sans-serif;font-weight:700;font-size:13px;outline:none;}
+.rename-inp:focus{border-color:var(--gold-dim);}
+.rename-save{padding:7px 14px;background:var(--gold);color:#0e0e0f;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer;white-space:nowrap;}
+.rename-save:active{background:var(--gold-dim);}
+/* VARIANT EDIT */
+.edit-var-btn{background:none;border:1px solid rgba(201,168,76,.3);border-radius:6px;color:var(--text-dim);font-size:10px;font-weight:700;padding:3px 7px;cursor:pointer;flex-shrink:0;}
+.edit-var-btn:active{border-color:var(--gold);color:var(--gold);}
+.var-edit-form{padding:11px 12px;background:var(--surface2);border-top:1px solid var(--border);display:none;}
+.var-edit-form.open{display:block;}
+.vef-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:9px;}
+.vef-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px;}
+.vef-lbl{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.vef-inp{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:7px 9px;width:100%;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;outline:none;}
+.vef-inp:focus{border-color:var(--gold-dim);}
+.vef-btns{display:flex;gap:7px;}
+.vef-save{flex:1;padding:8px;background:var(--gold);color:#0e0e0f;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer;}
+.vef-cancel{padding:8px 12px;background:var(--surface);border:1px solid var(--border);border-radius:7px;color:var(--text-dim);font-size:11px;cursor:pointer;}
+/* NOVÝ PRODUKT V DODÁVCE */
+.new-prod-toggle{width:100%;padding:10px;background:none;border:2px dashed rgba(201,168,76,.4);border-radius:9px;color:var(--gold);font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;margin-top:4px;transition:all .2s;}
+.new-prod-toggle:active{border-color:var(--gold);background:rgba(201,168,76,.05);}
+.new-prod-form{background:var(--surface2);border:1px solid rgba(201,168,76,.25);border-radius:10px;padding:13px;margin-top:9px;display:none;}
+.new-prod-form.open{display:block;}
+.new-prod-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.new-prod-dept-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
+.new-prod-dept-btn{background:var(--surface);border:2px solid var(--border);border-radius:9px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;font-size:10px;}
+.new-prod-dept-btn.selected{border-color:var(--gold);background:rgba(201,168,76,.08);}
+.new-prod-dept-icon{font-size:20px;margin-bottom:2px;}
+.new-prod-dept-name{font-family:'Syne',sans-serif;font-weight:700;font-size:9px;letter-spacing:.04em;}
+.new-prod-sep{height:1px;background:var(--border);margin:10px 0;}
+.npf-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;}
+.npf-inp{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;width:100%;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;outline:none;}
+.npf-inp:focus{border-color:var(--gold-dim);}
+.npf-lbl{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.npf-add-btn{width:100%;padding:10px;background:var(--gold);color:#0e0e0f;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;margin-top:4px;}
+.npf-add-btn:active{background:var(--gold-dim);}
+.batch-item-new{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.3);}
+.bnp-new-badge{display:inline-block;margin-left:6px;font-size:9px;font-weight:700;letter-spacing:.08em;color:#0e0e0f;background:var(--green);border-radius:4px;padding:1px 5px;vertical-align:middle;}
+/* HISTORY SEARCH */
+.hist-search{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 13px;width:100%;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;margin-bottom:10px;outline:none;transition:border-color .2s;}
+.hist-search:focus{border-color:var(--gold-dim);}
+.hist-search::placeholder{color:var(--text-dim);}
+/* PIN OVERLAY */
+.pin-overlay{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;}
+.pin-overlay.hidden{display:none;}
+.pin-title{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:6px;text-align:center;}
+.pin-title span{color:var(--gold);}
+.pin-sub{font-size:13px;color:var(--text-dim);margin-bottom:32px;text-align:center;}
+.pin-dots{display:flex;gap:14px;margin-bottom:28px;}
+.pin-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--border);background:none;transition:all .2s;}
+.pin-dot.filled{background:var(--gold);border-color:var(--gold);}
+.pin-dot.error{background:var(--red);border-color:var(--red);}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:240px;}
+.pin-key{height:60px;border-radius:12px;background:var(--surface);border:1px solid var(--border);font-family:'Syne',sans-serif;font-weight:700;font-size:20px;color:var(--text);cursor:pointer;transition:all .15s;}
+.pin-key:active{background:var(--surface2);transform:scale(.95);}
+.pin-key.del{font-size:16px;color:var(--text-dim);}
+.pin-setup-link{margin-top:20px;font-size:12px;color:var(--text-dim);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+/* BACKUP */
+.backup-section{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px;margin-top:13px;}
+.backup-title{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+.backup-desc{font-size:12px;color:var(--text-dim);margin-bottom:12px;line-height:1.5;}
+.backup-btns{display:flex;gap:8px;}
+.btn-backup{flex:1;padding:11px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--text);}
+.btn-backup:active{background:var(--border);}
+.btn-backup-primary{flex:1;padding:11px;background:var(--gold);color:#0e0e0f;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;}
+/* BATCH NASKLADNĚNÍ */
+.batch-item{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px;}
+.batch-item-info{flex:1;min-width:0;}
+.batch-item-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.batch-item-detail{font-size:11px;color:var(--text-dim);}
+.batch-item-qty{font-family:'Instrument Sans',Arial,sans-serif;font-weight:700;font-size:16px;color:var(--gold);}
+.batch-remove{background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;}
+.batch-remove:active{color:var(--red);}
+.delivery-note-row{background:var(--surface2);border:1px solid rgba(201,168,76,.2);border-radius:9px;padding:10px 13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.delivery-note-inp{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:13px;}
+.delivery-note-inp::placeholder{color:var(--text-dim);}
+/* ATTR EDIT IN VEF */
+.vef-attrs{display:grid;gap:7px;margin-bottom:8px;}
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:480px;border-top:1px solid var(--border);}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:4px;}
+.modal-sub{font-size:12px;color:var(--text-dim);margin-bottom:16px;}
+.modal-label{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.reason-btn{padding:11px 8px;border-radius:9px;border:2px solid var(--border);background:var(--surface2);text-align:center;cursor:pointer;transition:all .2s;}
+.reason-btn.selected{border-color:var(--gold);background:rgba(201,168,76,.09);}
+.reason-btn-icon{font-size:20px;margin-bottom:4px;}
+.reason-btn-label{font-size:12px;font-weight:600;}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.modal-inp{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:9px 11px;width:100%;color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;outline:none;}
+.modal-inp:focus{border-color:var(--gold-dim);}
+.modal-btns{display:flex;gap:8px;margin-top:4px;}
+.modal-cancel{flex:0 0 auto;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;color:var(--text-dim);font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.modal-confirm{flex:1;padding:12px;background:var(--red);color:#fff;border:none;border-radius:9px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;}
+/* HISTORY */
+.move-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;margin-bottom:7px;padding:11px 13px;cursor:pointer;transition:border-color .15s;}
+.move-card.expanded{border-color:var(--gold-dim);}
+.move-header{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.move-type{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;}
+.move-in{background:rgba(85,168,120,.15);color:var(--green);border:1px solid rgba(85,168,120,.3);}
+.move-out-cust{background:rgba(85,136,204,.15);color:#5588cc;border:1px solid rgba(85,136,204,.3);}
+.move-out-own{background:rgba(201,168,76,.15);color:var(--gold);border:1px solid rgba(201,168,76,.3);}
+.move-product{font-family:'Syne',sans-serif;font-weight:700;font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.move-card.expanded .move-product{white-space:normal;overflow:visible;text-overflow:unset;}
+.move-date{font-size:11px;color:var(--text-dim);flex-shrink:0;}
+.move-detail{font-size:12px;color:var(--text-dim);line-height:1.4;}
+.move-qty{font-family:'Instrument Sans',Arial,sans-serif;font-weight:700;font-size:14px;color:var(--text);}
+.hist-filter{display:flex;gap:7px;margin-bottom:11px;overflow-x:auto;scrollbar-width:none;}
+.hist-filter::-webkit-scrollbar{display:none;}
+
+/* Prevent emoji rendering of digits */
+.stat-value,.hdr-count,.dept-stat-count,.batch-item-qty,.ls-qty,.move-qty{
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+}
+/* ===== REDESIGN: VĚTŠÍ TYPOGRAFIE + PŘEHLEDNOST ===== */
+/* Základní škálování */
+body{font-size:15px;}
+
+/* Header */
+.header{padding:16px 18px;}
+.header-title{font-size:20px;}
+.hdr-count{font-size:22px;font-family:'Instrument Sans',Arial,sans-serif;}
+.hdr-label{font-size:11px;margin-top:1px;}
+
+/* Tabs */
+.tabs{position:sticky;top:58px;}
+.tab{font-size:12px;padding:13px 4px;letter-spacing:.04em;}
+
+/* Stránky */
+.page{padding:16px;padding-bottom:40px;}
+
+/* Filtry */
+.filter-chip{font-size:13px;padding:8px 16px;border-radius:22px;}
+.search-bar{font-size:15px;padding:13px 16px;border-radius:12px;margin-bottom:14px;}
+
+/* Dept headers v seznamu */
+.dept-header{margin:20px 0 10px;}
+.dept-icon{font-size:16px;}
+.dept-name{font-size:12px;letter-spacing:.1em;}
+.dept-count{font-size:12px;padding:3px 10px;}
+.brand-lbl{font-size:12px;padding:7px 0 5px 2px;margin-bottom:8px;}
+
+/* Karta produktu */
+.product-thumb{width:72px;min-height:72px;font-size:24px;}
+.product-main{padding:12px 14px;}
+.product-name{font-size:15px;margin-bottom:5px;}
+.var-count{font-size:12px;}
+.expand-btn{font-size:16px;padding:0 15px;}
+.stock-badge{font-size:12px;padding:4px 10px;border-radius:20px;}
+
+/* Varianta řádek */
+.variant-row{padding:12px 14px;gap:10px;}
+.variant-attrs{margin-bottom:5px;gap:6px;}
+.attr-tag{font-size:12px;padding:3px 10px;border-radius:8px;}
+.variant-meta{gap:8px;}
+.variant-price{font-size:13px;}
+.del-var{font-size:18px;padding:5px;}
+.vyskl-btn,.naskl-btn,.edit-var-btn{font-size:11px;padding:5px 10px;border-radius:7px;}
+
+/* Inline formuláře */
+.add-var-row{padding:12px 14px;}
+.add-var-btn{padding:10px;font-size:11px;}
+.qv-form{padding:14px;}
+.qf-title{font-size:11px;margin-bottom:11px;}
+.qf-lbl{font-size:11px;margin-bottom:4px;}
+.qf-inp{font-size:14px;padding:9px 11px;border-radius:8px;}
+.qf-row{gap:9px;margin-bottom:9px;}
+.qf-save{font-size:12px;padding:11px;}
+.qf-cancel{font-size:12px;padding:11px 14px;}
+
+/* Rename row */
+.rename-row{padding:12px 14px;}
+.rename-inp{font-size:14px;padding:9px 12px;}
+.rename-save{font-size:12px;padding:9px 16px;}
+.del-product-row{padding:10px 14px;}
+.del-product-btn{font-size:12px;}
+
+/* Přidat — step indicator */
+.step-indicator{margin-bottom:22px;}
+.step-dot{width:30px;height:30px;font-size:13px;}
+.step-lbl{font-size:10px;margin-top:4px;}
+
+/* Dept dlaždice */
+.dept-tile{padding:22px 12px;border-radius:14px;}
+.dept-tile-icon{font-size:34px;margin-bottom:8px;}
+.dept-tile-name{font-size:15px;}
+.dept-tile-count{font-size:12px;margin-top:3px;}
+
+/* Brand chips */
+.brand-chip{font-size:14px;padding:10px 16px;border-radius:10px;}
+
+/* Sel bar */
+.sel-bar{padding:12px 15px;font-size:14px;border-radius:10px;margin-bottom:16px;}
+.sel-bar-icon{font-size:18px;}
+.sel-bar-change{font-size:12px;}
+
+/* Form sections */
+.form-section{padding:16px;margin-bottom:14px;border-radius:13px;}
+.form-section-title{font-size:11px;margin-bottom:14px;letter-spacing:.1em;}
+.form-group{margin-bottom:13px;}
+.form-label{font-size:11px;margin-bottom:5px;letter-spacing:.06em;}
+.form-input{font-size:15px;padding:12px 14px;border-radius:9px;}
+
+/* Variant builder */
+.vf-attr-hint{font-size:12px;padding:10px 12px;margin-bottom:10px;}
+.vli{padding:10px 13px;border-radius:9px;margin-bottom:6px;}
+.add-vf-btn{padding:11px;font-size:11px;}
+
+/* Nav buttons */
+.btn-back{font-size:13px;padding:14px 18px;border-radius:10px;}
+.btn-next{font-size:13px;padding:14px;border-radius:10px;}
+.btn-submit{font-size:14px;padding:16px;border-radius:10px;margin-bottom:10px;}
+.btn-reset{font-size:12px;padding:13px;border-radius:10px;}
+
+/* Modal */
+.modal{padding:24px;}
+.modal-title{font-size:17px;margin-bottom:6px;}
+.modal-sub{font-size:13px;margin-bottom:18px;}
+.modal-label{font-size:11px;margin-bottom:7px;}
+.reason-btn{padding:14px 10px;border-radius:10px;}
+.reason-btn-icon{font-size:24px;margin-bottom:6px;}
+.reason-btn-label{font-size:13px;}
+.modal-inp{font-size:15px;padding:12px 13px;border-radius:9px;}
+.modal-cancel{font-size:13px;padding:14px 18px;border-radius:10px;}
+.modal-confirm{font-size:13px;padding:14px;border-radius:10px;}
+
+/* Statistiky */
+.stats-grid{gap:10px;margin-bottom:16px;}
+.stat-card{padding:16px;border-radius:13px;}
+.stat-label{font-size:11px;margin-bottom:7px;letter-spacing:.08em;}
+.stat-value{font-size:28px;}
+.stat-sub{font-size:11px;margin-top:3px;}
+.dept-stat{padding:15px;border-radius:11px;margin-bottom:9px;gap:14px;}
+.dept-stat-icon{font-size:24px;width:38px;}
+.dept-stat-name{font-size:14px;margin-bottom:3px;}
+.dept-stat-detail{font-size:12px;}
+.dept-stat-count{font-size:20px;font-family:'Instrument Sans',Arial,sans-serif;}
+
+/* Low stock */
+.low-stock-header{padding:15px 17px;font-size:13px;}
+.ls-row{padding:11px 16px;gap:12px;}
+.ls-icon{font-size:16px;}
+.ls-name{font-size:13px;}
+.ls-variant{font-size:12px;}
+.ls-qty{font-size:16px;}
+
+/* Export / backup sekce */
+.export-section,.backup-section{padding:18px;border-radius:13px;}
+.export-title,.backup-title{font-size:11px;margin-bottom:10px;letter-spacing:.1em;}
+.export-desc,.backup-desc{font-size:13px;margin-bottom:14px;}
+.btn-export,.btn-backup,.btn-backup-primary{font-size:13px;padding:14px;}
+
+/* History */
+.move-card{padding:14px 15px;margin-bottom:9px;border-radius:11px;}
+.move-type{font-size:11px;padding:3px 10px;}
+.move-product{font-size:13px;}
+.move-date{font-size:12px;}
+.move-detail{font-size:13px;}
+.move-qty{font-size:16px;}
+.hist-search{font-size:14px;padding:12px 15px;border-radius:11px;margin-bottom:12px;}
+
+/* PIN */
+.pin-title{font-size:26px;margin-bottom:8px;}
+.pin-sub{font-size:14px;margin-bottom:36px;}
+.pin-dots{gap:16px;margin-bottom:32px;}
+.pin-dot{width:18px;height:18px;}
+.pin-grid{width:270px;gap:12px;}
+.pin-key{height:68px;font-size:22px;border-radius:14px;}
+
+/* VEF form */
+.vef-title{font-size:11px;margin-bottom:11px;}
+.vef-lbl{font-size:11px;margin-bottom:4px;}
+.vef-inp{font-size:14px;padding:9px 11px;}
+.vef-save{font-size:12px;padding:11px;}
+.vef-cancel{font-size:12px;padding:11px 14px;}
+
+/* Batch */
+.batch-item{padding:12px 14px;border-radius:10px;margin-bottom:9px;}
+.batch-item-name{font-size:14px;}
+.batch-item-detail{font-size:12px;}
+.batch-item-qty{font-size:18px;}
+.delivery-note-row{padding:12px 15px;border-radius:10px;margin-bottom:14px;}
+.delivery-note-inp{font-size:14px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-title">SOFWUL <span>SKLAD</span></div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Přepnout téma">🌙</button>
+    <div class="hdr-right"><div class="hdr-count" id="hdr-count">0</div><div class="hdr-label">produktů</div></div>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('seznam')">📦 Sklad</div>
+  <div class="tab" onclick="switchTab('pridat')">➕ Přidat</div>
+  <div class="tab" onclick="switchTab('batch')">📋 Dodávka</div>
+  <div class="tab" onclick="switchTab('prehled')">📊 Přehled</div>
+  <div class="tab" onclick="switchTab('historie')">🕐 Historie</div>
+</div>
+
+<!-- SEZNAM -->
+<div class="page active" id="page-seznam">
+  <div style="display:flex;gap:0;margin-bottom:11px;">
+    <input class="search-bar" style="margin-bottom:0;border-radius:10px 0 0 10px;flex:1;" type="text" placeholder="Hledat produkt, značku, emitor, EAN..." oninput="renderList()" id="search-input">
+    <button class="scan-btn" style="border-radius:0 10px 10px 0;border-left:none;font-size:20px;padding:0 14px;" onclick="openScanner('search-input')" title="Skenovat EAN">▦</button>
+  </div>
+  <div class="filter-bar">
+    <div class="filter-chip active" onclick="setFilter('vse',this)">Vše</div>
+    <div class="filter-chip" onclick="setFilter('svitilny',this)">🔦 Svítilny</div>
+    <div class="filter-chip" onclick="setFilter('nabijecky',this)">🔌 Nabíječky</div>
+    <div class="filter-chip" onclick="setFilter('akumulatory',this)">🔋 Akumulátory</div>
+    <div class="filter-chip" onclick="setFilter('prislusenstvi',this)">🧰 Příslušenství</div>
+  </div>
+  <div id="product-list"></div>
+</div>
+
+<!-- PŘIDAT -->
+<div class="page" id="page-pridat">
+  <div class="step-indicator">
+    <div class="step-w"><div class="step-dot active" id="dot-1">1</div><div class="step-lbl">Oddělení</div></div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-w"><div class="step-dot" id="dot-2">2</div><div class="step-lbl">Značka</div></div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-w"><div class="step-dot" id="dot-3">3</div><div class="step-lbl">Produkt</div></div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-w"><div class="step-dot" id="dot-4">4</div><div class="step-lbl">Varianty</div></div>
+  </div>
+
+  <!-- KROK 1 -->
+  <div class="step-panel active" id="step-1">
+    <div class="dept-grid">
+      <div class="dept-tile" onclick="selDept('svitilny',this)"><div class="dept-tile-icon">🔦</div><div class="dept-tile-name">Svítilny</div><div class="dept-tile-count" id="dc-svitilny">0 pol.</div></div>
+      <div class="dept-tile" onclick="selDept('nabijecky',this)"><div class="dept-tile-icon">🔌</div><div class="dept-tile-name">Nabíječky</div><div class="dept-tile-count" id="dc-nabijecky">0 pol.</div></div>
+      <div class="dept-tile" onclick="selDept('akumulatory',this)"><div class="dept-tile-icon">🔋</div><div class="dept-tile-name">Akumulátory</div><div class="dept-tile-count" id="dc-akumulatory">0 pol.</div></div>
+      <div class="dept-tile" onclick="selDept('prislusenstvi',this)"><div class="dept-tile-icon">🧰</div><div class="dept-tile-name">Příslušenství</div><div class="dept-tile-count" id="dc-prislusenstvi">0 pol.</div></div>
+    </div>
+    <div class="step-nav" style="margin-top:12px;"><button class="btn-next" id="btn1" disabled onclick="goStep(2)">Vybrat značku →</button></div>
+  </div>
+
+  <!-- KROK 2 -->
+  <div class="step-panel" id="step-2">
+    <div class="sel-bar"><span class="sel-bar-icon" id="s2-icon"></span><span style="flex:1"><strong id="s2-dept"></strong></span><span class="sel-bar-change" onclick="goStep(1)">změnit</span></div>
+    <div class="brand-grid" id="brand-grid"></div>
+    <div class="cb-box" id="cb-box">
+      <div style="font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;">Vlastní značka</div>
+      <div class="cb-row"><input class="cb-inp" type="text" id="cb-inp" placeholder="název značky"><button class="cb-add" onclick="saveCustomBrand()">+</button></div>
+    </div>
+    <div class="step-nav"><button class="btn-back" onclick="goStep(1)">← Zpět</button><button class="btn-next" id="btn2" disabled onclick="goStep(3)">Zadat produkt →</button></div>
+  </div>
+
+  <!-- KROK 3 -->
+  <div class="step-panel" id="step-3">
+    <div class="sel-bar"><span class="sel-bar-icon" id="s3-icon"></span><span style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-dim)" id="s3-dept"></div><strong id="s3-brand"></strong></span><span class="sel-bar-change" onclick="goStep(2)">změnit</span></div>
+    <div class="form-section">
+      <div class="form-section-title">📸 Foto produktu</div>
+      <div class="photo-upload">
+        <input type="file" accept="image/*" capture="environment" onchange="handlePhoto(this)">
+        <div class="photo-icon" id="photo-icon">📷</div>
+        <div class="photo-txt" id="photo-txt">Vyfotit nebo vybrat z galerie</div>
+      </div>
+      <img id="photo-preview" class="photo-preview">
+    </div>
+    <div class="form-section">
+      <div class="form-section-title">📝 Název produktu</div>
+      <div class="form-group"><label class="form-label">Název *</label><input class="form-input" type="text" id="f-name" placeholder="např. H200, TS22, VC4S..." oninput="checkStep3()"></div>
+      <div class="form-group"><label class="form-label">Poznámka</label><input class="form-input" type="text" id="f-note" placeholder="obecná poznámka k modelu..."></div>
+    </div>
+    <div class="step-nav"><button class="btn-back" onclick="goStep(2)">← Zpět</button><button class="btn-next" id="btn3" disabled onclick="goStep(4)">Přidat varianty →</button></div>
+  </div>
+
+  <!-- KROK 4 -->
+  <div class="step-panel" id="step-4">
+    <div class="sel-bar">
+      <span class="sel-bar-icon" id="s4-icon"></span>
+      <span style="flex:1;min-width:0;"><div style="font-size:11px;color:var(--text-dim)" id="s4-dept-brand"></div><strong id="s4-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;"></strong></span>
+      <span class="sel-bar-change" onclick="goStep(3)">změnit</span>
+    </div>
+    <div class="form-section">
+      <div class="form-section-title" id="vf-title">📦 Varianty produktu</div>
+      <div class="vf-attr-hint" id="vf-hint"></div>
+      <div class="variants-list" id="vf-list"></div>
+      <div id="vf-form">
+        <div class="vf-attr-row" id="vf-attr-row"></div>
+        <div class="form-row" style="margin-bottom:8px;">
+          <div><div class="form-label">EAN / Kód</div><div class="ean-wrap"><input class="form-input" type="text" id="vf-ean" placeholder="volitelné"><button class="scan-btn" onclick="openScanner('vf-ean')" title="Skenovat">▦</button></div></div>
+          <div><div class="form-label">Cena (Kč) *</div><input class="form-input" type="number" id="vf-price" placeholder="0"></div>
+        </div>
+        <div class="form-row" style="margin-bottom:10px;">
+          <div><div class="form-label">Množství (ks) *</div><input class="form-input" type="number" id="vf-qty" placeholder="1" min="0"></div>
+          <div><div class="form-label">Poznámka</div><input class="form-input" type="text" id="vf-note" placeholder="volitelné"></div>
+        </div>
+        <button class="add-vf-btn" onclick="addVariantToForm()">＋ PŘIDAT TUTO VARIANTU</button>
+      </div>
+    </div>
+    <button class="btn-submit" id="btn-submit" onclick="saveProduct()" disabled>✓ ULOŽIT PRODUKT SE VARIANTAMI</button>
+    <button class="btn-reset" onclick="resetForm()">↺ Začít znovu</button>
+  </div>
+</div>
+
+<!-- HROMADNÉ NASKLADNĚNÍ -->
+<div class="page" id="page-batch">
+  <div class="delivery-note-row">
+    <span style="font-size:16px">📋</span>
+    <input class="delivery-note-inp" type="text" id="batch-delivery-note" placeholder="Číslo faktury / zásilky (volitelné)">
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">📦 Položky k naskladnění</div>
+    <div id="batch-list"><div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Přidej produkty ze skladu níže.</div></div>
+  </div>
+  <div class="form-section">
+    <div class="form-section-title">🔍 Vybrat existující produkt</div>
+    <div style="display:flex;gap:0;margin-bottom:10px;">
+      <input class="form-input" style="border-radius:7px 0 0 7px;" type="text" id="batch-search" placeholder="Hledat nebo skenovat EAN..." oninput="renderBatchSearch()">
+      <button class="scan-btn" style="border-radius:0 7px 7px 0;" onclick="openScanner('batch-search')">▦</button>
+    </div>
+    <div id="batch-search-results"></div>
+    <button class="new-prod-toggle" onclick="toggleNewProdForm()">＋ PŘIDAT NOVÝ PRODUKT DO DODÁVKY</button>
+    <div class="new-prod-form" id="new-prod-form">
+      <div class="new-prod-title">🆕 Nový produkt</div>
+      <div class="npf-lbl" style="margin-bottom:6px;">Oddělení *</div>
+      <div class="new-prod-dept-grid">
+        <div class="new-prod-dept-btn" onclick="selNewProdDept('svitilny',this)"><div class="new-prod-dept-icon">🔦</div><div class="new-prod-dept-name">Svítilny</div></div>
+        <div class="new-prod-dept-btn" onclick="selNewProdDept('nabijecky',this)"><div class="new-prod-dept-icon">🔌</div><div class="new-prod-dept-name">Nabíječky</div></div>
+        <div class="new-prod-dept-btn" onclick="selNewProdDept('akumulatory',this)"><div class="new-prod-dept-icon">🔋</div><div class="new-prod-dept-name">Akumulátory</div></div>
+        <div class="new-prod-dept-btn" onclick="selNewProdDept('prislusenstvi',this)"><div class="new-prod-dept-icon">🧰</div><div class="new-prod-dept-name">Příslušenství</div></div>
+      </div>
+      <div class="new-prod-sep"></div>
+      <div class="npf-row">
+        <div><div class="npf-lbl">Značka *</div><input class="npf-inp" type="text" id="npf-brand" placeholder="např. Acebeam"></div>
+        <div><div class="npf-lbl">Název *</div><input class="npf-inp" type="text" id="npf-name" placeholder="např. H200"></div>
+      </div>
+      <div id="npf-attrs-container"></div>
+      <div class="npf-row">
+        <div><div class="npf-lbl">EAN / Kód</div>
+          <div class="ean-wrap"><input class="npf-inp" type="text" id="npf-ean" placeholder="volitelné"><button class="scan-btn" onclick="openScanner('npf-ean')" title="Skenovat">▦</button></div>
+        </div>
+        <div><div class="npf-lbl">Cena (Kč)</div><input class="npf-inp" type="number" id="npf-price" placeholder="0"></div>
+      </div>
+      <div class="npf-row">
+        <div><div class="npf-lbl">Množství (ks) *</div><input class="npf-inp" type="number" id="npf-qty" placeholder="1" min="1" value="1"></div>
+        <div><div class="npf-lbl">Poznámka</div><input class="npf-inp" type="text" id="npf-note" placeholder="volitelné"></div>
+      </div>
+      <button class="npf-add-btn" onclick="addNewProdToBatch()">＋ PŘIDAT DO DODÁVKY</button>
+    </div>
+  </div>
+  <button class="btn-submit" id="batch-submit-btn" onclick="saveBatch()" disabled>⬆ NASKLADNIT VŠE</button>
+  <button class="btn-reset" onclick="clearBatch()">↺ Vymazat seznam</button>
+</div>
+
+<!-- PŘEHLED -->
+<div class="page" id="page-prehled">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Produktů</div><div class="stat-value" id="s-total">0</div><div class="stat-sub">modelů</div></div>
+    <div class="stat-card"><div class="stat-label">Variant (SKU)</div><div class="stat-value" id="s-vars">0</div><div class="stat-sub">různých konfigurací</div></div>
+    <div class="stat-card"><div class="stat-label">Kusů celkem</div><div class="stat-value" id="s-qty">0</div><div class="stat-sub">ks na skladě</div></div>
+    <div class="stat-card"><div class="stat-label">Hodnota skladu</div><div class="stat-value" id="s-value" style="font-size:14px">0 Kč</div><div class="stat-sub">nákupní ceny</div></div>
+  </div>
+  <div id="dept-stats"></div>
+  <div class="low-stock-section" id="low-stock-section">
+    <div class="low-stock-header" onclick="toggleLowStock()">
+      <span>⚠ Dochází zásoba</span>
+      <span id="low-stock-count" style="font-size:11px;color:var(--text-dim);margin-left:8px;"></span>
+      <span class="low-stock-arrow" id="low-stock-arrow">▼</span>
+    </div>
+    <div class="low-stock-body" id="low-stock-body"></div>
+  </div>
+  <div class="export-section">
+    <div class="export-title">📤 Export do Excelu</div>
+    <div class="export-desc">Záložka "Celý sklad" (každá varianta = řádek) + záložka pro každé oddělení zvlášť.</div>
+    <button class="btn-export" onclick="exportExcel()">⬇ EXPORTOVAT DO EXCELU</button>
+  </div>
+  <!-- STORAGE INDIKÁTOR -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:15px;margin-top:13px;">
+    <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;">💾 Stav úložiště (localStorage)</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span style="font-size:12px;color:var(--text-dim);" id="storage-bar-label">0 KB / ~5000 KB</span>
+      <span style="font-size:11px;color:var(--text-dim);">Prohlížeč</span>
+    </div>
+    <div style="background:var(--surface2);border-radius:6px;height:8px;overflow:hidden;margin-bottom:8px;">
+      <div id="storage-bar-fill" style="height:100%;width:0%;background:var(--green);border-radius:6px;transition:width .4s,background .4s;"></div>
+    </div>
+    <div id="storage-warning" style="display:none;font-size:12px;font-weight:600;padding:8px 10px;background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.25);border-radius:7px;margin-bottom:8px;"></div>
+    <div style="font-size:11px;color:var(--text-dim);line-height:1.6;">
+      ⚠ Data jsou uložena v prohlížeči. Vymazání cache = <strong style="color:var(--red);">ztráta dat</strong>.<br>
+      Zálohu stahuj pravidelně přes tlačítko níže.
+    </div>
+  </div>
+
+  <div class="backup-section">
+    <div class="backup-title">💾 Záloha dat</div>
+    <div class="backup-desc">Stáhni zálohu před reinstalací telefonu nebo vymazáním prohlížeče. Každá záloha má číslo pro snadnou identifikaci.</div>
+    <div class="backup-btns">
+      <button class="btn-backup-primary" onclick="backupData()">⬇ Stáhnout zálohu</button>
+      <label class="btn-backup" style="cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">
+        ⬆ Obnovit data<input type="file" accept=".json" style="display:none" onchange="restoreData(this)">
+      </label>
+    </div>
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+      <div class="backup-title" style="margin-bottom:6px;">🔒 PIN zámek</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;line-height:1.5;">
+        PIN chrání aplikaci před neoprávněným přístupem na sdíleném zařízení. Nechrání data v prohlížeči — zálohy jsou vždy bez šifrování.
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:12px;color:var(--text-dim);flex:1;" id="pin-status">PIN není nastaven</span>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;" onclick="openPinSetup()">Nastavit PIN</button>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;color:var(--red);" id="pin-remove-btn" onclick="removePin()">Odebrat</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+      <div class="backup-title" style="margin-bottom:6px;">🗑 Koš</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:12px;color:var(--text-dim);flex:1;" id="trash-status">Koš je prázdný</span>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;" onclick="openTrash()">Zobrazit koš</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+      <div class="backup-title" style="margin-bottom:6px;">📋 Audit log</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:12px;color:var(--text-dim);flex:1;" id="audit-status">Žádné záznamy</span>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;" onclick="openAudit()">Zobrazit</button>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;" onclick="exportAuditExcel()">⬇ Excel</button>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;color:var(--red);border-color:rgba(224,85,85,.3);" onclick="clearAuditLog()">🗑 Vymazat</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+      <div class="backup-title" style="margin-bottom:6px;">🕐 Historie pohybů</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:12px;color:var(--text-dim);flex:1;" id="moves-status">Žádné pohyby</span>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;" onclick="exportMovementsExcel()">⬇ Excel</button>
+        <button class="btn-backup" style="flex:0;white-space:nowrap;padding:8px 12px;color:var(--red);border-color:rgba(224,85,85,.3);" onclick="clearMovements()">🗑 Vymazat</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
+      <div class="backup-title" style="margin-bottom:6px;color:var(--red);">⚠ Nebezpečná zóna</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">Nevratně smaže všechna data skladu, historii pohybů i audit log. Zálohu si stáhni předem.</div>
+      <button class="btn-backup" style="width:100%;color:var(--red);border-color:rgba(224,85,85,.3);" onclick="resetAllData()">🗑 Vymazat všechna data</button>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORIE -->
+<div class="page" id="page-historie">
+  <input class="hist-search" type="text" id="hist-search-inp" placeholder="Hledat produkt v historii..." oninput="renderHistory()">
+  <div class="hist-filter filter-bar">
+    <div class="filter-chip active" onclick="setHistFilter('vse',this)">Vše</div>
+    <div class="filter-chip" onclick="setHistFilter('naskladneni',this)">📥 Naskladnění</div>
+    <div class="filter-chip" onclick="setHistFilter('zakaznik',this)">📦 Zákazník</div>
+    <div class="filter-chip" onclick="setHistFilter('vlastni',this)">🔧 Vlastní</div>
+  </div>
+  <div id="history-list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- PÁTEČNÍ PŘIPOMÍNKA -->
+<div class="modal-overlay" id="friday-overlay">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">📅</div>
+    <div class="modal-title" style="margin-bottom:6px;">Dnes je pátek!</div>
+    <div class="modal-sub" style="margin-bottom:20px;">Nezapomeň si stáhnout týdenní zálohu dat skladu. Ochráníš se před ztrátou dat.</div>
+    <button class="btn-export" style="margin-bottom:10px;" onclick="backupData();closeFridayReminder()">⬇ Stáhnout zálohu</button>
+    <br>
+    <button style="background:none;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;padding:8px;" onclick="closeFridayReminder()">Připomenout příště</button>
+  </div>
+</div>
+
+<!-- VÝZVA K ZÁLOZE PO NASKLADNĚNÍ -->
+<div class="modal-overlay" id="backup-prompt-overlay">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">💾</div>
+    <div class="modal-title" style="margin-bottom:6px;">Naskladněno!</div>
+    <div class="modal-sub" id="backup-prompt-sub" style="margin-bottom:20px;">Doporučujeme stáhnout zálohu — máš nová data na skladě.</div>
+    <button class="btn-export" style="margin-bottom:10px;" onclick="backupData();closeBackupPrompt()">⬇ Stáhnout zálohu</button>
+    <br>
+    <button style="background:none;border:none;color:var(--text-dim);font-size:12px;cursor:pointer;padding:8px;" onclick="closeBackupPrompt()">Přeskočit</button>
+  </div>
+</div>
+
+<!-- NÁHLED OBNOVY -->
+<div class="modal-overlay" id="restore-preview-overlay">
+  <div class="modal">
+    <div class="modal-title" style="margin-bottom:4px;">📂 Náhled zálohy</div>
+    <div class="modal-sub" style="margin-bottom:14px;">Zkontroluj obsah zálohy před obnovením.</div>
+    <div id="restore-preview-content"></div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="modal-cancel" onclick="cancelRestore()">Zrušit</button>
+      <button class="modal-confirm" style="background:var(--green);" onclick="confirmRestore()">✓ OBNOVIT DATA</button>
+    </div>
+  </div>
+</div>
+
+<!-- KOŠ -->
+<div class="modal-overlay" id="trash-overlay" onclick="closeTrash(event)">
+  <div class="modal" style="max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="modal-title">🗑 Koš</div>
+      <button style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;" onclick="closeTrash()">×</button>
+    </div>
+    <div id="trash-list"></div>
+  </div>
+</div>
+
+<!-- AUDIT LOG -->
+<div class="modal-overlay" id="audit-overlay" onclick="closeAudit(event)">
+  <div class="modal" style="max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div class="modal-title">📋 Audit log</div>
+      <button style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;" onclick="closeAudit()">×</button>
+    </div>
+    <div id="audit-list"></div>
+  </div>
+</div>
+<div class="pin-overlay hidden" id="pin-overlay">
+  <div class="pin-title">SOFWUL <span>SKLAD</span></div>
+  <div class="pin-sub" id="pin-overlay-sub">Zadejte PIN</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="pd-0"></div>
+    <div class="pin-dot" id="pd-1"></div>
+    <div class="pin-dot" id="pd-2"></div>
+    <div class="pin-dot" id="pd-3"></div>
+  </div>
+  <div class="pin-grid">
+    <button class="pin-key" onclick="pinKey('1')">1</button>
+    <button class="pin-key" onclick="pinKey('2')">2</button>
+    <button class="pin-key" onclick="pinKey('3')">3</button>
+    <button class="pin-key" onclick="pinKey('4')">4</button>
+    <button class="pin-key" onclick="pinKey('5')">5</button>
+    <button class="pin-key" onclick="pinKey('6')">6</button>
+    <button class="pin-key" onclick="pinKey('7')">7</button>
+    <button class="pin-key" onclick="pinKey('8')">8</button>
+    <button class="pin-key" onclick="pinKey('9')">9</button>
+    <button class="pin-key" style="visibility:hidden"></button>
+    <button class="pin-key" onclick="pinKey('0')">0</button>
+    <button class="pin-key del" onclick="pinDel()">⌫</button>
+  </div>
+  <div class="pin-setup-link" id="pin-setup-link" onclick="pinForgot()" style="display:none">Zapomněl jsem PIN</div>
+</div>
+
+<!-- VYMAZAT AUDIT LOG -->
+<div class="modal-overlay" id="clear-audit-overlay">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">📋</div>
+    <div class="modal-title" style="margin-bottom:8px;">Vymazat audit log?</div>
+    <div class="modal-sub" style="margin-bottom:20px;">Všechny záznamy o akcích budou trvale smazány. Produkty a jejich stav zůstanou nedotčeny.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" style="flex:1;" onclick="clearAuditLogCancel()">Zrušit</button>
+      <button class="modal-confirm" onclick="clearAuditLogConfirm()">🗑 VYMAZAT LOG</button>
+    </div>
+  </div>
+</div>
+
+<!-- VYMAZAT HISTORII POHYBŮ -->
+<div class="modal-overlay" id="clear-moves-overlay">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">🕐</div>
+    <div class="modal-title" style="margin-bottom:8px;">Vymazat historii pohybů?</div>
+    <div class="modal-sub" style="margin-bottom:20px;">Celá historie naskladnění a vyskladnění bude trvale smazána. Aktuální stav skladu zůstane nedotčen.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" style="flex:1;" onclick="clearMovementsCancel()">Zrušit</button>
+      <button class="modal-confirm" onclick="clearMovementsConfirm()">🗑 VYMAZAT HISTORII</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET POTVRZENÍ -->
+<div class="modal-overlay" id="reset-confirm-overlay">
+  <div class="modal" style="text-align:center;">
+    <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+    <div class="modal-title" style="margin-bottom:8px;color:var(--red);">Vymazat všechna data?</div>
+    <div class="modal-sub" style="margin-bottom:6px;">Bude nevratně smazáno:</div>
+    <div style="background:rgba(224,85,85,.08);border:1px solid rgba(224,85,85,.2);border-radius:10px;padding:12px;margin-bottom:20px;text-align:left;">
+      <div style="font-size:13px;color:var(--text);line-height:2;">
+        • Všechny produkty a varianty<br>
+        • Historie pohybů<br>
+        • Audit log<br>
+        • Koš
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Nejdřív si stáhni zálohu pokud ji ještě nemáš!</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" style="flex:1;" onclick="resetAllDataCancel()">Zrušit</button>
+      <button class="modal-confirm" onclick="resetAllDataConfirm()">🗑 VYMAZAT VŠE</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCANNER MODAL -->
+<div class="scanner-overlay" id="scanner-overlay">
+  <div class="scanner-header">
+    <div class="scanner-title">📷 Skenovat čárový kód</div>
+    <button class="scanner-close" onclick="closeScanner()">✕ Zavřít</button>
+  </div>
+  <div class="scanner-viewport">
+    <video id="scanner-video" autoplay playsinline muted></video>
+    <div class="scanner-guide">
+      <div class="scanner-box">
+        <div class="scanner-line"></div>
+      </div>
+    </div>
+    <div class="scanner-hint">Namiřte kameru na čárový kód</div>
+  </div>
+  <div class="scanner-result" id="scanner-result">
+    <div class="scanner-found" id="scanner-found-text"></div>
+    <div class="scanner-ean" id="scanner-ean-text"></div>
+  </div>
+</div>
+
+<!-- VYSKLADNIT / NASKLADNIT MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Vyskladnit</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div id="modal-reason-section">
+      <div class="modal-label">Důvod vyskladnění</div>
+      <div class="reason-grid">
+        <div class="reason-btn selected" id="rb-zakaznik" onclick="selectReason('zakaznik')"><div class="reason-btn-icon">📦</div><div class="reason-btn-label">Zákazník</div></div>
+        <div class="reason-btn" id="rb-vlastni" onclick="selectReason('vlastni')"><div class="reason-btn-icon">🔧</div><div class="reason-btn-label">Vlastní potřeba</div></div>
+      </div>
+    </div>
+    <div class="modal-label">Počet kusů *</div>
+    <div class="modal-row" style="margin-bottom:12px;">
+      <div><input class="modal-inp" type="number" id="modal-qty" placeholder="1" min="1" value="1"></div>
+      <div><input class="modal-inp" type="text" id="modal-note" placeholder="poznámka (volitelné)"></div>
+    </div>
+    <div style="margin-bottom:14px;"><span id="modal-stock-info" style="color:var(--text-dim);font-size:11px;"></span></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Zrušit</button>
+      <button class="modal-confirm" id="modal-confirm-btn" onclick="confirmModal()">⬇ VYSKLADNIT</button>
+    </div>
+  </div>
+</div>
+<script>
+const DEPTS={svitilny:{label:'Svítilny',icon:'🔦'},nabijecky:{label:'Nabíječky',icon:'🔌'},akumulatory:{label:'Akumulátory',icon:'🔋'},prislusenstvi:{label:'Příslušenství',icon:'🧰'}};
+const DEFAULT_BRANDS={svitilny:['Wurkkos','Skilhunt','Acebeam','Lumintop','Sofirn','Emisar','Convoy'],nabijecky:['XTAR','Nitecore','Golisi','Liitokala','Opus'],akumulatory:['Samsung','Sony / Murata','LG','Molicel','Vapcell','Wama','Lishen'],prislusenstvi:['Různé']};
+// Atributy variant podle oddělení: [{id, label, hint}]
+const DEPT_ATTRS={
+  svitilny:[{id:'emitor',label:'Emitor',primary:true,hint:'Nichia 519A, SST20, XHP50.3...', ph:'např. Nichia 519A'},{id:'barva',label:'Barva těla',hint:'černá, šedá, titanium, camo...', ph:'např. černá'}],
+  nabijecky:[{id:'sloty',label:'Počet slotů / Typ',primary:true,hint:'1S, 2S, 4S, USB-C...', ph:'např. 4S'},{id:'poznamka',label:'Varianta',hint:'', ph:'volitelné'}],
+  akumulatory:[{id:'kapacita',label:'Kapacita',primary:true,hint:'2500mAh, 4000mAh...', ph:'např. 4000mAh'},{id:'chemie',label:'Chemie / Typ buňky',hint:'INR, IMR, 18650, 21700...', ph:'např. 21700 INR'}],
+  prislusenstvi:[{id:'velikost',label:'Velikost / Typ',primary:true,hint:'18650, 21700, S, M, L...', ph:'např. 18650'},{id:'poznamka',label:'Poznámka',hint:'', ph:'volitelné'}],
+};
+
+// ===== INTEGRITY CHECK + NAČTENÍ DAT =====
+function safeLoad(key,fallback){
+  try{
+    const raw=localStorage.getItem(key);
+    if(!raw)return fallback;
+    const parsed=JSON.parse(raw);
+    // základní typová kontrola
+    if(fallback===null)return parsed;
+    if(Array.isArray(fallback)&&!Array.isArray(parsed))throw new Error('Očekáváno pole');
+    if(typeof fallback==='object'&&!Array.isArray(fallback)&&typeof parsed!=='object')throw new Error('Očekáván objekt');
+    return parsed;
+  }catch(e){
+    console.warn('Integrity error for key '+key+':',e.message);
+    return null; // null = poškozená data
+  }
+}
+
+function checkIntegrity(){
+  const p=safeLoad('sw_v4',[]);
+  const m=safeLoad('sw_moves_v5',[]);
+  if(p===null||m===null){
+    // poškozená data — informovat uživatele
+    if(!confirm('⚠ Data skladu jsou poškozená nebo chybí.\n\nPokračovat s prázdným skladem? (Obnov data ze zálohy přes Přehled → Obnovit data)')){{
+      return null;
+    }}
+    return {products:[],movements:[],customBrands:{},trash:[],auditLog:[]};
+  }
+  return {products:p,movements:m,customBrands:safeLoad('sw_brands_v4',{})||{},trash:safeLoad('sw_trash_v6',[])||[],auditLog:safeLoad('sw_audit_v6',[])||[]};
+}
+
+const _loaded=checkIntegrity();
+let products=_loaded?_loaded.products:[];
+let customBrands=_loaded?_loaded.customBrands:{};
+let movements=_loaded?_loaded.movements:[];
+let trash=_loaded?_loaded.trash:[];
+// Automaticky smazat expirované položky koše
+trash=trash.filter(t=>{try{return new Date(t.expiresAt).getTime()>Date.now();}catch(e){return false;}});
+let auditLog=_loaded?_loaded.auditLog:[];
+let backupVersion=parseInt(localStorage.getItem('sw_backup_ver')||'0');
+let restorePreviewData=null;
+let fDept=null,fBrand=null,fPhoto=null;
+let fVariants=[];
+let activeFilter='vse';
+let histFilter='vse';
+// modal state
+let modalProductId=null,modalVariantIdx=null,modalReason='zakaznik';
+
+function getStorageUsageKB(){
+  let total=0;
+  for(let k in localStorage){
+    if(localStorage.hasOwnProperty(k)) total+=((localStorage[k]||'').length+(k||'').length)*2;
+  }
+  return Math.round(total/1024);
+}
+
+function checkStorageWarning(){
+  const kb=getStorageUsageKB();
+  const el=document.getElementById('storage-warning');
+  if(!el)return;
+  if(kb>3500){
+    el.style.display='block';
+    el.innerHTML=`⚠ Úložiště téměř plné (${kb} KB / ~5000 KB). Stáhni zálohu a zvaž odstranění fotografií.`;
+    el.style.color=kb>4500?'var(--red)':'var(--gold)';
+  } else {
+    el.style.display='none';
+  }
+  // update storage bar
+  const bar=document.getElementById('storage-bar-fill');
+  if(bar){const pct=Math.min(100,Math.round(kb/5000*100));bar.style.width=pct+'%';bar.style.background=pct>80?'var(--red)':pct>60?'var(--gold)':'var(--green)';}
+  const lbl=document.getElementById('storage-bar-label');
+  if(lbl)lbl.textContent=kb+' KB / ~5000 KB';
+}
+
+function save(){
+  try{
+    localStorage.setItem('sw_v4',JSON.stringify(products));
+    localStorage.setItem('sw_brands_v4',JSON.stringify(customBrands));
+    localStorage.setItem('sw_moves_v5',JSON.stringify(movements));
+    localStorage.setItem('sw_trash_v6',JSON.stringify(trash));
+    localStorage.setItem('sw_audit_v6',JSON.stringify(auditLog));
+  }catch(e){
+    // localStorage plné — zkus uložit bez fotek
+    showToast('⚠ Úložiště plné! Ukládám bez fotek.',false);
+    const productsNoPhoto=products.map(p=>({...p,photo:null}));
+    try{
+      localStorage.setItem('sw_v4',JSON.stringify(productsNoPhoto));
+      localStorage.setItem('sw_brands_v4',JSON.stringify(customBrands));
+      localStorage.setItem('sw_moves_v5',JSON.stringify(movements));
+      localStorage.setItem('sw_trash_v6',JSON.stringify(trash));
+      localStorage.setItem('sw_audit_v6',JSON.stringify(auditLog));
+    }catch(e2){
+      showToast('❌ Kritická chyba úložiště! Ihned stáhni zálohu!',false);
+    }
+  }
+  checkStorageWarning();
+}
+function addAudit(action,detail){
+  auditLog.unshift({id:Date.now(),action,detail,date:new Date().toISOString()});
+  if(auditLog.length>500)auditLog=auditLog.slice(0,500); // limit
+}
+function getBrands(d){return[...(DEFAULT_BRANDS[d]||[]),...(customBrands[d]||[])];}
+
+// TABS
+function switchTab(t){
+  ['seznam','pridat','batch','prehled','historie'].forEach((n,i)=>{
+    document.querySelectorAll('.tab')[i].classList.toggle('active',n===t);
+    const p=document.getElementById('page-'+n);
+    if(p)p.classList.toggle('active',n===t);
+  });
+  if(t==='seznam')renderList();
+  if(t==='prehled'){renderStats();updatePinStatus();checkStorageWarning();updateMovesStatus();updateAuditStatus();}
+  if(t==='pridat')updateDeptCounts();
+  if(t==='historie')renderHistory();
+  if(t==='batch'){renderBatchSearch();renderBatchList();}
+}
+
+// STEPS
+function goStep(n){
+  [1,2,3,4].forEach(i=>{
+    document.getElementById('step-'+i).classList.toggle('active',i===n);
+    const d=document.getElementById('dot-'+i);
+    d.classList.remove('active','done');
+    if(i<n){d.classList.add('done');d.textContent='✓';}
+    else if(i===n){d.classList.add('active');d.textContent=i;}
+    else d.textContent=i;
+  });
+  [1,2,3].forEach(i=>document.getElementById('line-'+i).classList.toggle('done',i<n));
+  if(n===2)renderBrandGrid();
+  if(n===3)renderStep3Bar();
+  if(n===4)renderStep4();
+  window.scrollTo(0,0);
+}
+
+// STEP 1
+function selDept(dept,el){
+  fDept=dept;fBrand=null;fVariants=[];
+  document.querySelectorAll('.dept-tile').forEach(t=>t.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('btn1').disabled=false;
+}
+function updateDeptCounts(){
+  Object.keys(DEPTS).forEach(d=>{
+    const el=document.getElementById('dc-'+d);
+    if(el)el.textContent=products.filter(p=>p.dept===d).length+' pol.';
+  });
+}
+
+// STEP 2
+function renderBrandGrid(){
+  const d=DEPTS[fDept];
+  document.getElementById('s2-icon').textContent=d.icon;
+  document.getElementById('s2-dept').textContent=d.label;
+  const brands=getBrands(fDept);
+  const grid=document.getElementById('brand-grid');
+  grid.innerHTML=brands.map(b=>`<div class="brand-chip${b===fBrand?' selected':''}" onclick="pickBrand('${b.replace(/'/g,"\\'")}',this)">${b}</div>`).join('')
+    +`<div class="brand-chip add-new" onclick="toggleCB()">＋ Vlastní značka</div>`;
+  document.getElementById('btn2').disabled=!fBrand;
+  document.getElementById('cb-box').classList.remove('open');
+}
+function pickBrand(b,el){fBrand=b;document.querySelectorAll('.brand-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');document.getElementById('btn2').disabled=false;document.getElementById('cb-box').classList.remove('open');}
+function toggleCB(){document.getElementById('cb-box').classList.toggle('open');if(document.getElementById('cb-box').classList.contains('open'))document.getElementById('cb-inp').focus();}
+function saveCustomBrand(){
+  const name=document.getElementById('cb-inp').value.trim();if(!name)return;
+  if(!customBrands[fDept])customBrands[fDept]=[];
+  if(!customBrands[fDept].includes(name))customBrands[fDept].push(name);
+  save();document.getElementById('cb-inp').value='';fBrand=name;renderBrandGrid();
+  document.querySelectorAll('.brand-chip').forEach(c=>{if(c.textContent===name)c.classList.add('selected');});
+  document.getElementById('btn2').disabled=false;
+}
+
+// STEP 3
+function renderStep3Bar(){
+  const d=DEPTS[fDept];
+  document.getElementById('s3-icon').textContent=d.icon;
+  document.getElementById('s3-dept').textContent=d.label;
+  document.getElementById('s3-brand').textContent=fBrand;
+}
+function checkStep3(){document.getElementById('btn3').disabled=!document.getElementById('f-name').value.trim();}
+
+// STEP 4
+function renderStep4(){
+  const d=DEPTS[fDept];const name=document.getElementById('f-name').value.trim();
+  document.getElementById('s4-icon').textContent=d.icon;
+  document.getElementById('s4-dept-brand').textContent=d.label+' · '+fBrand;
+  document.getElementById('s4-name').textContent=name;
+  document.getElementById('vf-title').textContent='📦 Varianty — '+fBrand+' '+name;
+  const attrs=DEPT_ATTRS[fDept]||[];
+  const hints=attrs.map(a=>a.label+(a.hint?' ('+a.hint+')':'')).join(', ');
+  document.getElementById('vf-hint').textContent=hints?'Atributy této varianty: '+hints:'Zadej parametry varianty.';
+  renderAttrFields();renderVfList();
+}
+function renderAttrFields(){
+  const attrs=DEPT_ATTRS[fDept]||[];
+  const row=document.getElementById('vf-attr-row');
+  const cols=attrs.length>=2?'1fr 1fr':'1fr';
+  row.style.gridTemplateColumns=cols;
+  row.innerHTML=attrs.map(a=>`<div><div class="form-label">${a.label}</div><input class="form-input" type="text" id="vf-a-${a.id}" placeholder="${a.ph}"></div>`).join('');
+}
+function renderVfList(){
+  const list=document.getElementById('vf-list');
+  if(!fVariants.length){list.innerHTML='<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">Zatím žádná varianta. Přidej první níže.</div>';document.getElementById('btn-submit').disabled=true;return;}
+  list.innerHTML=fVariants.map((v,i)=>{
+    const attrs=DEPT_ATTRS[fDept]||[];
+    const tags=attrs.map(a=>v[a.id]?`<span class="attr-tag attr-p">${v[a.id]}</span>`:'').join('')
+      +(v.qty!==undefined?`<span class="attr-tag attr-s">${v.qty} ks</span>`:'')
+      +(v.price?`<span class="attr-tag attr-s">${v.price} Kč</span>`:'');
+    return`<div class="vli"><div class="vli-tags">${tags}</div><button class="vli-rm" onclick="removeVariant(${i})">×</button></div>`;
+  }).join('');
+  document.getElementById('btn-submit').disabled=false;
+}
+function addVariantToForm(){
+  const attrs=DEPT_ATTRS[fDept]||[];
+  const qty=parseInt(document.getElementById('vf-qty').value)||0;
+  const price=parseFloat(document.getElementById('vf-price').value)||0;
+  const ean=document.getElementById('vf-ean').value.trim();
+  const v={qty,price,ean,note:document.getElementById('vf-note').value.trim()};
+  attrs.forEach(a=>{v[a.id]=document.getElementById('vf-a-'+a.id).value.trim();});
+  const hasAttr=attrs.some(a=>v[a.id]);
+  if(!hasAttr&&qty<1){showToast('⚠ Zadej alespoň atribut nebo množství',false);return;}
+  if(qty<0){showToast('⚠ Množství nesmí být záporné',false);return;}
+  // EAN duplicita v rámci formuláře
+  if(ean&&fVariants.some(fv=>fv.ean===ean)){showToast('⚠ Tento EAN už máš v této várce',false);return;}
+  // EAN duplicita na skladě
+  if(ean){
+    const existingP=products.find(p=>p.variants.some(ev=>ev.ean===ean));
+    if(existingP){
+      if(!confirm('⚠ EAN '+ean+' už existuje u produktu "'+existingP.brand+' '+existingP.name+'".\n\nPřidat přesto?'))return;
+    }
+  }
+  fVariants.push(v);
+  attrs.forEach(a=>{const el=document.getElementById('vf-a-'+a.id);if(el)el.value='';});
+  ['vf-ean','vf-price','vf-qty','vf-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderVfList();
+}
+function removeVariant(i){fVariants.splice(i,1);renderVfList();}
+
+// PHOTO
+function handlePhoto(input){
+  const file=input.files[0];if(!file)return;
+  const img=new Image();
+  const reader=new FileReader();
+  reader.onload=e=>{
+    img.onload=()=>{
+      // Komprese: max 200x200px, JPEG quality 0.5 → ~5-15kB místo 500kB+
+      const MAX=200;
+      let w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}}
+      else{if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}}
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      fPhoto=canvas.toDataURL('image/jpeg',0.5);
+      const p=document.getElementById('photo-preview');
+      p.src=fPhoto;p.style.display='block';
+      document.getElementById('photo-icon').textContent='✅';
+      document.getElementById('photo-txt').textContent='Foto přidáno (zkomprimováno)';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// SAVE PRODUCT
+function saveProduct(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!fVariants.length){showToast('⚠ Přidej alespoň jednu variantu',false);return;}
+  // kontrola duplicit — stejná značka + název
+  const dup=products.find(p=>p.brand===fBrand&&p.name.toLowerCase()===name.toLowerCase()&&p.dept===fDept);
+  if(dup){
+    if(!confirm('⚠ Produkt "'+fBrand+' '+name+'" už na skladě existuje.\n\nChceš přesto přidat jako nový produkt?'))return;
+  }
+  // kontrola duplicitních EAN v přidávaných variantách
+  const eanWarnings=[];
+  fVariants.forEach(v=>{
+    if(!v.ean)return;
+    const existingP=products.find(p=>p.variants.some(ev=>ev.ean===v.ean));
+    if(existingP)eanWarnings.push(v.ean+' ('+existingP.brand+' '+existingP.name+')');
+  });
+  if(eanWarnings.length){
+    if(!confirm('⚠ Tyto EAN kódy už existují na skladě:\n'+eanWarnings.join('\n')+'\n\nPokračovat?'))return;
+  }
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('cs-CZ');
+  const dateISO=now.toISOString();
+  fVariants.forEach(v=>{v.dateIn=dateISO;});
+  const productId=Date.now();
+  products.unshift({id:productId,dept:fDept,brand:fBrand,name,note:document.getElementById('f-note').value.trim(),photo:fPhoto,variants:fVariants,date:dateStr});
+  fVariants.forEach((v,i)=>{
+    if(v.qty>0){
+      const attrs=DEPT_ATTRS[fDept]||[];
+      const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+      movements.unshift({id:Date.now()+i,type:'naskladneni',productId,variantIdx:i,product:fBrand+' '+name,variant:varLabel,qty:v.qty,price:v.price,note:v.note,date:dateISO});
+    }
+  });
+  save();showToast('✓ Uloženo: '+fBrand+' '+name+' ('+fVariants.length+' variant)');
+  resetForm();switchTab('seznam');
+  showBackupPrompt('Naskladněno: '+fBrand+' '+name+'. Záloha chrání tvá data.');
+}
+function resetForm(){
+  fDept=null;fBrand=null;fPhoto=null;fVariants=[];
+  ['f-name','f-note'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const pp=document.getElementById('photo-preview');if(pp){pp.style.display='none';pp.src='';}
+  document.getElementById('photo-icon').textContent='📷';document.getElementById('photo-txt').textContent='Vyfotit nebo vybrat z galerie';
+  document.querySelectorAll('.dept-tile').forEach(t=>t.classList.remove('selected'));
+  document.getElementById('btn1').disabled=true;
+  goStep(1);updateDeptCounts();
+}
+
+// FILTER + RENDER LIST
+function setFilter(dept,el){activeFilter=dept;document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderList();}
+
+function toggleProduct(id){
+  const panel=document.getElementById('vp-'+id);const btn=document.getElementById('eb-'+id);
+  const isOpen=panel.classList.contains('open');
+  panel.classList.toggle('open',!isOpen);btn.classList.toggle('open',!isOpen);
+}
+
+function renderList(){
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  document.getElementById('hdr-count').textContent=products.length;
+  let filtered=products.filter(p=>{
+    const matchD=activeFilter==='vse'||p.dept===activeFilter;
+    const matchQ=!q||p.name.toLowerCase().includes(q)||(p.brand||'').toLowerCase().includes(q)||(p.variants||[]).some(v=>Object.values(v).some(val=>String(val).toLowerCase().includes(q)));
+    return matchD&&matchQ;
+  });
+  const container=document.getElementById('product-list');
+  if(!filtered.length){container.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📦</div><div class="empty-state-text">${products.length===0?'Sklad je prázdný.<br>Přidej první produkt.':'Žádný produkt nenalezen.'}</div></div>`;return;}
+  const grouped={};
+  filtered.forEach(p=>{if(!grouped[p.dept])grouped[p.dept]={};if(!grouped[p.dept][p.brand])grouped[p.dept][p.brand]=[];grouped[p.dept][p.brand].push(p);});
+  let html='';
+  ['svitilny','nabijecky','akumulatory','prislusenstvi'].forEach(dept=>{
+    if(!grouped[dept])return;
+    const d=DEPTS[dept];const tot=Object.values(grouped[dept]).flat().length;
+    html+=`<div class="dept-header"><span class="dept-icon">${d.icon}</span><span class="dept-name">${d.label}</span><span class="dept-line"></span><span class="dept-count">${tot} pol.</span></div>`;
+    Object.entries(grouped[dept]).forEach(([brand,items])=>{
+      html+=`<div class="brand-lbl">${brand}</div>`;
+      items.forEach(p=>{
+        const totalQty=(p.variants||[]).reduce((s,v)=>s+v.qty,0);
+        const hasZero=(p.variants||[]).some(v=>v.qty===0);
+        const hasLow=(p.variants||[]).some(v=>v.qty>0&&v.qty<=2);
+        const sc=totalQty===0?'stock-zero':hasLow?'stock-low':'stock-ok';
+        const sl=totalQty===0?'❌ 0 ks':(hasLow?`⚠ ${totalQty} ks`:`✓ ${totalQty} ks`);
+        const thumb=p.photo?`<div class="product-thumb"><img src="${p.photo}" alt=""></div>`:`<div class="product-thumb">${d.icon}</div>`;
+        // variants html
+        const attrs=DEPT_ATTRS[dept]||[];
+        const varsHtml=p.variants.map((v,vi)=>{
+          const vsc=v.qty===0?'stock-zero':v.qty<=2?'stock-low':'stock-ok';
+          const vsl=v.qty===0?'❌ 0 ks':v.qty<=2?`⚠ ${v.qty} ks`:`✓ ${v.qty} ks`;
+          const attrTags=attrs.map(a=>v[a.id]?`<span class="attr-tag attr-p">${v[a.id]}</span>`:'').filter(Boolean).join('');
+          const secTags=(v.note?`<span class="attr-tag attr-s">${v.note}</span>`:'')+(v.ean?`<span class="attr-tag attr-s">${v.ean}</span>`:'');
+          const dateInStr=v.dateIn?'📥 '+new Date(v.dateIn).toLocaleDateString('cs-CZ'):'';
+          const vefId=`vef-${p.id}-${vi}`;
+          return`<div class="variant-row"><div class="variant-info"><div class="variant-attrs">${attrTags||'<span class="attr-tag attr-s">—</span>'}${secTags}</div><div class="variant-meta"><span class="stock-badge ${vsc}">${vsl}</span>${v.price?`<span class="variant-price">${v.price.toLocaleString('cs-CZ')} Kč</span>`:''}</div>${dateInStr?`<div style="font-size:10px;color:var(--text-dim);margin-top:3px;">${dateInStr}</div>`:''}</div><div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;"><button class="naskl-btn" onclick="openNaskl(${p.id},${vi})">+&nbsp;Naskladnit</button><button class="vyskl-btn" onclick="openVyskl(${p.id},${vi})">−&nbsp;Vyskladnit</button><button class="edit-var-btn" onclick="toggleVEF('${vefId}')">✎&nbsp;Upravit</button><button class="del-var" onclick="delVariant(${p.id},${vi})">×</button></div></div>
+          <div class="var-edit-form" id="${vefId}">
+            <div class="vef-title">Upravit variantu</div>
+            <div class="vef-attrs" id="${vefId}-attrs" style="grid-template-columns:${attrs.length>=2?'1fr 1fr':'1fr'};">${attrs.map(a=>`<div><div class="vef-lbl">${a.label}</div><input class="vef-inp" type="text" id="${vefId}-a-${a.id}" value="${v[a.id]||''}" placeholder="${a.ph}"></div>`).join('')}</div>
+            <div class="vef-row">
+              <div><div class="vef-lbl">Množství (ks)</div><input class="vef-inp" type="number" id="${vefId}-qty" value="${v.qty}" min="0"></div>
+              <div><div class="vef-lbl">Cena (Kč)</div><input class="vef-inp" type="number" id="${vefId}-price" value="${v.price||0}"></div>
+              <div><div class="vef-lbl">Poznámka</div><input class="vef-inp" type="text" id="${vefId}-note" value="${v.note||''}" placeholder="volitelné"></div>
+            </div>
+            <div class="vef-btns">
+              <button class="vef-cancel" onclick="toggleVEF('${vefId}')">Zrušit</button>
+              <button class="vef-save" onclick="saveVEF(${p.id},${vi},'${vefId}')">✓ Uložit změny</button>
+            </div>
+          </div>`;
+        }).join('');
+        // quick add variant form
+        const qfId='qf-'+p.id;
+        const qfAttrs=attrs.map(a=>`<div><div class="qf-lbl">${a.label}</div><input class="qf-inp" type="text" id="${qfId}-a-${a.id}" placeholder="${a.ph}"></div>`).join('');
+        html+=`<div class="product-card">
+          <div class="product-header" onclick="toggleProduct(${p.id})">
+            ${thumb}
+            <div class="product-main">
+              <div class="product-name">${p.name}</div>
+              <div class="product-summary"><span class="var-count">${p.variants.length} variant${p.variants.length===1?'a':p.variants.length<5?'y':''}  ·  ${p.date}</span><span class="stock-badge ${sc}">${sl}</span></div>
+            </div>
+            <div class="expand-btn" id="eb-${p.id}">▼</div>
+          </div>
+          <div class="variants-panel" id="vp-${p.id}">
+            ${varsHtml}
+            <div class="add-var-row"><button class="add-var-btn" onclick="event.stopPropagation();toggleQF('${qfId}')">＋ Přidat variantu</button></div>
+            <div class="qv-form" id="${qfId}">
+              <div class="qf-title">Nová varianta — ${p.name}</div>
+              <div class="qf-row">${qfAttrs}</div>
+              <div class="qf-row">
+                <div><div class="qf-lbl">Množství (ks)</div><input class="qf-inp" type="number" id="${qfId}-qty" placeholder="1" min="0"></div>
+                <div><div class="qf-lbl">Cena (Kč)</div><input class="qf-inp" type="number" id="${qfId}-price" placeholder="0"></div>
+              </div>
+              <div class="qf-row">
+                <div><div class="qf-lbl">EAN</div><div class="ean-wrap"><input class="qf-inp" type="text" id="${qfId}-ean" placeholder="volitelné"><button class="scan-btn" onclick="openScanner('${qfId}-ean')" title="Skenovat">▦</button></div></div>
+                <div><div class="qf-lbl">Poznámka</div><input class="qf-inp" type="text" id="${qfId}-note" placeholder="volitelné"></div>
+              </div>
+              <div class="qf-btns">
+                <button class="qf-cancel" onclick="toggleQF('${qfId}')">Zrušit</button>
+                <button class="qf-save" onclick="quickAddVariant(${p.id},'${qfId}','${dept}')">Přidat variantu</button>
+              </div>
+            </div>
+            <div class="rename-row">
+              <input class="rename-inp" type="text" id="rn-${p.id}" value="${p.name}" placeholder="Název produktu">
+              <button class="rename-save" onclick="renameProduct(${p.id})">✎ Přejmenovat</button>
+            </div>
+            <div class="del-product-row"><button class="del-product-btn" onclick="deleteProduct(${p.id})">🗑 Smazat celý produkt</button></div>
+          </div>
+        </div>`;
+      });
+    });
+  });
+  container.innerHTML=html;
+}
+
+function toggleQF(id){const f=document.getElementById(id);f.classList.toggle('open');}
+
+function quickAddVariant(productId,qfId,dept){
+  const p=products.find(x=>x.id===productId);if(!p)return;
+  const attrs=DEPT_ATTRS[dept]||[];
+  const qty=parseInt(document.getElementById(qfId+'-qty').value)||0;
+  const price=parseFloat(document.getElementById(qfId+'-price').value)||0;
+  const ean=document.getElementById(qfId+'-ean').value.trim();
+  const now=new Date();
+  // EAN duplicita
+  if(ean){
+    const existingP=products.find(px=>px.variants.some(ev=>ev.ean===ean));
+    if(existingP&&existingP.id!==productId){
+      if(!confirm('⚠ EAN '+ean+' už existuje u produktu "'+existingP.brand+' '+existingP.name+'".\n\nPřidat přesto?'))return;
+    }
+  }
+  const v={qty,price,ean,note:document.getElementById(qfId+'-note').value.trim(),dateIn:now.toISOString()};
+  attrs.forEach(a=>{const el=document.getElementById(qfId+'-a-'+a.id);if(el)v[a.id]=el.value.trim();});
+  p.variants.push(v);
+  if(qty>0){
+    const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+    movements.unshift({id:Date.now(),type:'naskladneni',productId,variantIdx:p.variants.length-1,product:p.brand+' '+p.name,variant:varLabel,qty,price,note:v.note,date:now.toISOString()});
+  }
+  save();renderList();showToast('✓ Varianta přidána');
+  setTimeout(()=>{const panel=document.getElementById('vp-'+productId);const btn=document.getElementById('eb-'+productId);if(panel){panel.classList.add('open');btn.classList.add('open');}},50);
+}
+
+function delVariant(productId,vi){
+  const p=products.find(x=>x.id===productId);if(!p)return;
+  const v=p.variants[vi];
+  const attrs=DEPT_ATTRS[p.dept]||[];
+  const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+  const msg=p.variants.length<=1
+    ?'Smazat poslední variantu "'+varLabel+'" a tím i celý produkt '+p.brand+' '+p.name+'?'
+    :'Smazat variantu "'+varLabel+'" produktu '+p.brand+' '+p.name+'?';
+  if(!confirm(msg))return;
+  // přesun do koše
+  const trashItem={
+    id:Date.now(),type:'varianta',
+    productId,productName:p.brand+' '+p.name,
+    variantIdx:vi,variant:{...v},varLabel,
+    deletedAt:new Date().toISOString(),
+    expiresAt:new Date(Date.now()+30*24*60*60*1000).toISOString()
+  };
+  if(p.variants.length<=1){
+    trashItem.type='produkt';
+    trashItem.fullProduct={...p,variants:[...p.variants]};
+  }
+  trash.unshift(trashItem);
+  addAudit('smazání',`${trashItem.type==='produkt'?'Produkt':'Varianta'}: ${p.brand} ${p.name} / ${varLabel}`);
+  p.variants.splice(vi,1);
+  if(!p.variants.length)products=products.filter(x=>x.id!==productId);
+  save();renderList();
+  showToast('✓ Přesunuto do koše (30 dní)');
+}
+
+function deleteProduct(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  if(!confirm('Smazat celý produkt '+p.brand+' '+p.name+' včetně všech variant?'))return;
+  trash.unshift({
+    id:Date.now(),type:'produkt',
+    productId:id,productName:p.brand+' '+p.name,
+    fullProduct:{...p,variants:[...p.variants]},
+    deletedAt:new Date().toISOString(),
+    expiresAt:new Date(Date.now()+30*24*60*60*1000).toISOString()
+  });
+  addAudit('smazání','Produkt: '+p.brand+' '+p.name+' ('+p.variants.length+' variant)');
+  products=products.filter(x=>x.id!==id);
+  save();renderList();
+  showToast('✓ Přesunuto do koše (30 dní)');
+}
+
+function renameProduct(id){
+  const p=products.find(x=>x.id===id);if(!p)return;
+  const newName=document.getElementById('rn-'+id).value.trim();
+  if(!newName){showToast('⚠ Název nesmí být prázdný',false);return;}
+  if(newName===p.name){showToast('Název je stejný',false);return;}
+  addAudit('přejmenování',p.brand+' '+p.name+' → '+p.brand+' '+newName);
+  p.name=newName;
+  const newFullName=p.brand+' '+newName;
+  movements.forEach(m=>{if(m.productId===id)m.product=newFullName;});
+  save();renderList();showToast('✓ Přejmenováno na: '+newName);
+  setTimeout(()=>{const panel=document.getElementById('vp-'+id);const btn=document.getElementById('eb-'+id);if(panel){panel.classList.add('open');btn.classList.add('open');}},50);
+}
+
+function toggleVEF(id){
+  const f=document.getElementById(id);
+  if(!f)return;
+  const isOpen=f.classList.contains('open');
+  // zavřít všechny ostatní edit formy
+  document.querySelectorAll('.var-edit-form.open').forEach(el=>el.classList.remove('open'));
+  if(!isOpen)f.classList.add('open');
+}
+
+function saveVEF(productId,vi,vefId){
+  const p=products.find(x=>x.id===productId);if(!p)return;
+  const v=p.variants[vi];
+  const newQty=parseInt(document.getElementById(vefId+'-qty').value)||0;
+  const newPrice=parseFloat(document.getElementById(vefId+'-price').value)||0;
+  const newNote=document.getElementById(vefId+'-note').value.trim();
+  if(newQty<0){showToast('⚠ Množství nesmí být záporné',false);return;}
+  const attrs=DEPT_ATTRS[p.dept]||[];
+  const changes=[];
+  if(newQty!==v.qty)changes.push('qty: '+v.qty+'→'+newQty);
+  if(newPrice!==v.price)changes.push('cena: '+v.price+'→'+newPrice+' Kč');
+  attrs.forEach(a=>{
+    const el=document.getElementById(vefId+'-a-'+a.id);
+    if(el&&el.value.trim()!==v[a.id])changes.push(a.label+': '+v[a.id]+'→'+el.value.trim());
+    if(el)v[a.id]=el.value.trim();
+  });
+  v.qty=newQty;v.price=newPrice;v.note=newNote;
+  if(changes.length){
+    const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+    addAudit('úprava varianty',p.brand+' '+p.name+' / '+varLabel+': '+changes.join(', '));
+  }
+  save();
+  document.getElementById(vefId).classList.remove('open');
+  renderList();
+  showToast('✓ Varianta upravena');
+  setTimeout(()=>{const panel=document.getElementById('vp-'+productId);const btn=document.getElementById('eb-'+productId);if(panel){panel.classList.add('open');btn.classList.add('open');}},50);
+}
+
+// MODAL — naskladnění i vyskladnění
+let modalMode='vyskl'; // 'vyskl' | 'naskl'
+
+function openVyskl(productId,vi){
+  const p=products.find(x=>x.id===productId);if(!p)return;
+  const v=p.variants[vi];
+  const attrs=DEPT_ATTRS[p.dept]||[];
+  const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+  modalProductId=productId;modalVariantIdx=vi;modalReason='zakaznik';modalMode='vyskl';
+  document.getElementById('modal-title').textContent='Vyskladnit — '+p.brand+' '+p.name;
+  document.getElementById('modal-sub').textContent=varLabel+(v.price?' · '+v.price.toLocaleString('cs-CZ')+' Kč':'');
+  document.getElementById('modal-stock-info').textContent='Na skladě: '+v.qty+' ks';
+  document.getElementById('modal-reason-section').style.display='block';
+  document.getElementById('modal-qty').value='1';
+  document.getElementById('modal-note').value='';
+  document.getElementById('modal-confirm-btn').textContent='⬇ VYSKLADNIT';
+  document.getElementById('modal-confirm-btn').style.background='var(--red)';
+  selectReason('zakaznik');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function openNaskl(productId,vi){
+  const p=products.find(x=>x.id===productId);if(!p)return;
+  const v=p.variants[vi];
+  const attrs=DEPT_ATTRS[p.dept]||[];
+  const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+  modalProductId=productId;modalVariantIdx=vi;modalMode='naskl';
+  document.getElementById('modal-title').textContent='Naskladnit — '+p.brand+' '+p.name;
+  document.getElementById('modal-sub').textContent=varLabel+(v.price?' · '+v.price.toLocaleString('cs-CZ')+' Kč':'');
+  document.getElementById('modal-stock-info').textContent='Aktuálně na skladě: '+v.qty+' ks';
+  document.getElementById('modal-reason-section').style.display='none';
+  document.getElementById('modal-qty').value='1';
+  document.getElementById('modal-note').value='';
+  document.getElementById('modal-confirm-btn').textContent='⬆ NASKLADNIT';
+  document.getElementById('modal-confirm-btn').style.background='var(--green)';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e){if(e&&e.target!==document.getElementById('modal-overlay'))return;document.getElementById('modal-overlay').classList.remove('open');}
+
+function selectReason(r){
+  modalReason=r;
+  document.getElementById('rb-zakaznik').classList.toggle('selected',r==='zakaznik');
+  document.getElementById('rb-vlastni').classList.toggle('selected',r==='vlastni');
+}
+
+function confirmModal(){
+  if(modalMode==='naskl') confirmNaskl();
+  else confirmVyskl();
+}
+
+function confirmNaskl(){
+  const p=products.find(x=>x.id===modalProductId);if(!p)return;
+  const v=p.variants[modalVariantIdx];
+  const qty=parseInt(document.getElementById('modal-qty').value)||0;
+  const note=document.getElementById('modal-note').value.trim();
+  if(qty<1){showToast('⚠ Zadej množství',false);return;}
+  v.qty+=qty;
+  v.dateIn=new Date().toISOString(); // aktualizovat datum posledního naskladnění
+  const attrs=DEPT_ATTRS[p.dept]||[];
+  const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+  movements.unshift({id:Date.now(),type:'naskladneni',productId:modalProductId,variantIdx:modalVariantIdx,product:p.brand+' '+p.name,variant:varLabel,qty,price:v.price,note,date:new Date().toISOString()});
+  save();
+  document.getElementById('modal-overlay').classList.remove('open');
+  renderList();
+  showToast('✓ Naskladněno +'+qty+'× '+p.name);
+  setTimeout(()=>{const panel=document.getElementById('vp-'+modalProductId);const btn=document.getElementById('eb-'+modalProductId);if(panel){panel.classList.add('open');btn.classList.add('open');}},50);
+  showBackupPrompt('+'+qty+'× '+p.brand+' '+p.name+' naskladněno.');
+}
+
+function confirmVyskl(){
+  const p=products.find(x=>x.id===modalProductId);if(!p)return;
+  const v=p.variants[modalVariantIdx];
+  const qty=parseInt(document.getElementById('modal-qty').value)||0;
+  const note=document.getElementById('modal-note').value.trim();
+  if(qty<1){showToast('⚠ Zadej množství',false);return;}
+  if(qty>v.qty){showToast('⚠ Na skladě je jen '+v.qty+' ks',false);return;}
+  v.qty-=qty;
+  const attrs=DEPT_ATTRS[p.dept]||[];
+  const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+  movements.unshift({id:Date.now(),type:modalReason,productId:modalProductId,variantIdx:modalVariantIdx,product:p.brand+' '+p.name,variant:varLabel,qty,price:v.price,note,date:new Date().toISOString()});
+  save();
+  document.getElementById('modal-overlay').classList.remove('open');
+  renderList();
+  const label=modalReason==='zakaznik'?'odesláno zákazníkovi':'vyskladněno pro vlastní potřebu';
+  showToast('✓ '+qty+'× '+p.name+' '+label);
+  setTimeout(()=>{const panel=document.getElementById('vp-'+modalProductId);const btn=document.getElementById('eb-'+modalProductId);if(panel){panel.classList.add('open');btn.classList.add('open');}},50);
+  const promptLabel=modalReason==='zakaznik'?'odesláno zákazníkovi':'vyskladněno pro vlastní potřebu';
+  showBackupPrompt(qty+'× '+p.brand+' '+p.name+' '+promptLabel+'.');
+}
+
+// HISTORY
+function setHistFilter(f,el){histFilter=f;document.querySelectorAll('.hist-filter .filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderHistory();}
+function renderHistory(){
+  const q=(document.getElementById('hist-search-inp')?.value||'').toLowerCase();
+  let filtered=histFilter==='vse'?[...movements]:movements.filter(m=>m.type===histFilter);
+  if(q)filtered=filtered.filter(m=>m.product.toLowerCase().includes(q)||m.variant.toLowerCase().includes(q)||(m.note||'').toLowerCase().includes(q));
+  const container=document.getElementById('history-list');
+  if(!filtered.length){
+    container.innerHTML=`<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">${movements.length===0?'Žádné pohyby.':'Nic nenalezeno.'}</div></div>`;
+    return;
+  }
+  const typeInfo={naskladneni:{cls:'move-in',label:'📥 Naskladnění'},zakaznik:{cls:'move-out-cust',label:'📦 Zákazník'},vlastni:{cls:'move-out-own',label:'🔧 Vlastní potřeba'}};
+  container.innerHTML=filtered.map(m=>{
+    const ti=typeInfo[m.type]||{cls:'move-in',label:m.type};
+    const d=new Date(m.date);
+    const dateStr=d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+    const sign=m.type==='naskladneni'?'+':'-';
+    return`<div class="move-card" onclick="this.classList.toggle('expanded')">
+      <div class="move-header">
+        <span class="move-type ${ti.cls}">${ti.label}</span>
+        <span class="move-product">${m.product}</span>
+        <span class="move-date">${dateStr}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1"><div class="move-detail">${m.variant}${m.note?' · <em>'+m.note+'</em>':''}</div></div>
+        <div class="move-qty" style="color:${m.type==='naskladneni'?'var(--green)':'var(--red)'}">${sign}${m.qty} ks</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// STATS
+function renderStats(){
+  const allVars=products.flatMap(p=>p.variants||[]);
+  document.getElementById('s-total').textContent=String(products.length);
+  document.getElementById('s-vars').textContent=String(allVars.length);
+  document.getElementById('s-qty').textContent=String(allVars.reduce((s,v)=>s+v.qty,0));
+  const val=allVars.reduce((s,v)=>s+v.qty*v.price,0);
+  document.getElementById('s-value').textContent=val.toLocaleString('cs-CZ')+' Kč';
+  document.getElementById('dept-stats').innerHTML=Object.entries(DEPTS).map(([key,d])=>{
+    const items=products.filter(p=>p.dept===key);
+    const vars=items.flatMap(p=>p.variants);
+    const qty=vars.reduce((s,v)=>s+v.qty,0);
+    const brands=[...new Set(items.map(p=>p.brand))].filter(Boolean);
+    const deptVal=vars.reduce((s,v)=>s+v.qty*(v.price||0),0);
+    const deptValStr=deptVal>0?deptVal.toLocaleString('cs-CZ')+' Kč':'—';
+    return`<div class="dept-stat"><div class="dept-stat-icon">${d.icon}</div><div class="dept-stat-info"><div class="dept-stat-name">${d.label}</div><div class="dept-stat-detail">${items.length} produktů · ${vars.length} SKU · ${qty} ks</div><div style="font-size:12px;color:var(--gold);font-weight:600;margin-top:3px;">💰 ${deptValStr}</div></div><div class="dept-stat-count">${items.length}</div></div>`;
+  }).join('');
+
+  // low stock panel
+  const lowItems=[];
+  products.forEach(p=>{
+    const d=DEPTS[p.dept];
+    const attrs=DEPT_ATTRS[p.dept]||[];
+    p.variants.forEach(v=>{
+      if(v.qty<=2){
+        const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+        lowItems.push({icon:d?.icon||'📦',name:p.brand+' '+p.name,variant:varLabel,qty:v.qty});
+      }
+    });
+  });
+  lowItems.sort((a,b)=>a.qty-b.qty);
+  const count=lowItems.length;
+  document.getElementById('low-stock-count').textContent=count ? count+' položek' : '';
+  // color header based on severity
+  document.querySelector('.low-stock-header').style.color=count===0?'var(--green)':'var(--gold)';
+  document.getElementById('low-stock-body').innerHTML=count===0
+    ?'<div class="ls-empty">✓ Všechny zásoby jsou v pořádku</div>'
+    :lowItems.map(item=>{
+        const qc=item.qty===0?'var(--red)':item.qty<=1?'var(--red)':'var(--gold)';
+        return`<div class="ls-row">
+          <span class="ls-icon">${item.icon}</span>
+          <div class="ls-info">
+            <div class="ls-name">${item.name}</div>
+            <div class="ls-variant">${item.variant}</div>
+          </div>
+          <span class="ls-qty" style="color:${qc}">${item.qty} ks</span>
+        </div>`;
+      }).join('');
+}
+
+let lowStockOpen=false;
+function toggleLowStock(){
+  lowStockOpen=!lowStockOpen;
+  document.getElementById('low-stock-body').classList.toggle('open',lowStockOpen);
+  document.getElementById('low-stock-arrow').classList.toggle('open',lowStockOpen);
+}
+
+// EXPORT
+function exportMovementsExcel(){
+  if(typeof XLSX==='undefined'){showToast('⚠ Export vyžaduje internet',false);return;}
+  if(!movements.length){showToast('⚠ Historie pohybů je prázdná',false);return;}
+  const typeLabel={naskladneni:'Naskladnění',zakaznik:'Zákazník',vlastni:'Vlastní potřeba'};
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(movements.map(m=>({
+    'Typ':typeLabel[m.type]||m.type,
+    'Produkt':m.product,
+    'Varianta':m.variant,
+    'Množství':m.qty,
+    'Cena (Kč)':m.price,
+    'Poznámka':m.note||'',
+    'Datum':new Date(m.date).toLocaleDateString('cs-CZ')+' '+new Date(m.date).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'})
+  })));
+  XLSX.utils.book_append_sheet(wb,ws,'Historie pohybů');
+  XLSX.writeFile(wb,'sofwul_historie_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('✓ Historie pohybů exportována ('+movements.length+' záznamů)');
+}
+
+function exportAuditExcel(){
+  if(typeof XLSX==='undefined'){showToast('⚠ Export vyžaduje internet',false);return;}
+  if(!auditLog.length){showToast('⚠ Audit log je prázdný',false);return;}
+  const actionLabels={
+    'záloha':'Záloha','obnova':'Obnova','smazání':'Smazání',
+    'přejmenování':'Přejmenování','úprava varianty':'Úprava varianty',
+    'obnova z koše':'Obnova z koše','naskladnění':'Naskladnění',
+    'přidání produktu':'Přidání produktu'
+  };
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(auditLog.map(a=>({
+    'Akce':actionLabels[a.action]||a.action,
+    'Detail':a.detail,
+    'Datum':new Date(a.date).toLocaleDateString('cs-CZ')+' '+new Date(a.date).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'})
+  })));
+  XLSX.utils.book_append_sheet(wb,ws,'Audit log');
+  XLSX.writeFile(wb,'sofwul_audit_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('✓ Audit log exportován ('+auditLog.length+' záznamů)');
+}
+
+function exportExcel(){
+  if(typeof XLSX==='undefined'){
+    showToast('⚠ Export vyžaduje internet (načítá se XLSX knihovna)',false);
+    return;
+  }
+  if(!products.length){showToast('⚠ Sklad je prázdný',false);return;}
+  const wb=XLSX.utils.book_new();
+  function toRows(items,withDept){
+    return items.flatMap(p=>p.variants.map(v=>{
+      const attrs=DEPT_ATTRS[p.dept]||[];
+      const row={};
+      if(withDept)row['Oddělení']=DEPTS[p.dept]?.label||p.dept;
+      row['Značka']=p.brand;row['Produkt']=p.name;
+      attrs.forEach(a=>{row[a.label]=v[a.id]||'';});
+      row['EAN']=v.ean;row['Množství']=v.qty;row['Cena (Kč)']=v.price;
+      row['Hodnota (Kč)']=v.qty*v.price;row['Poznámka']=v.note;
+      row['Naskladněno']=v.dateIn?new Date(v.dateIn).toLocaleDateString('cs-CZ'):p.date;
+      return row;
+    }));
+  }
+  const wsAll=XLSX.utils.json_to_sheet(toRows(products,true));
+  XLSX.utils.book_append_sheet(wb,wsAll,'Celý sklad');
+  Object.entries(DEPTS).forEach(([key,d])=>{
+    const items=products.filter(p=>p.dept===key);if(!items.length)return;
+    const ws=XLSX.utils.json_to_sheet(toRows(items,false));
+    XLSX.utils.book_append_sheet(wb,ws,d.label);
+  });
+  // history sheet
+  if(movements.length){
+    const typeLabel={naskladneni:'Naskladnění',zakaznik:'Zákazník',vlastni:'Vlastní potřeba'};
+    const wsMoves=XLSX.utils.json_to_sheet(movements.map(m=>({
+      'Typ':typeLabel[m.type]||m.type,
+      'Produkt':m.product,'Varianta':m.variant,
+      'Množství':m.qty,'Cena (Kč)':m.price,
+      'Poznámka':m.note,
+      'Datum':new Date(m.date).toLocaleDateString('cs-CZ')+' '+new Date(m.date).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'})
+    })));
+    XLSX.utils.book_append_sheet(wb,wsMoves,'Historie pohybů');
+  }
+  // Audit log záložka
+  if(auditLog.length){
+    const actionLabels={
+      'záloha':'Záloha','obnova':'Obnova','smazání':'Smazání',
+      'přejmenování':'Přejmenování','úprava varianty':'Úprava varianty',
+      'obnova z koše':'Obnova z koše','naskladnění':'Naskladnění',
+      'přidání produktu':'Přidání produktu'
+    };
+    const wsAudit=XLSX.utils.json_to_sheet(auditLog.map(a=>({
+      'Akce':actionLabels[a.action]||a.action,
+      'Detail':a.detail,
+      'Datum':new Date(a.date).toLocaleDateString('cs-CZ')+' '+new Date(a.date).toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'})
+    })));
+    XLSX.utils.book_append_sheet(wb,wsAudit,'Audit log');
+  }
+  XLSX.writeFile(wb,'sofwul_sklad_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  showToast('✓ Excel stažen');
+}
+
+// TOAST
+function showToast(msg,success=true){const t=document.getElementById('toast');t.textContent=msg;t.style.background=success?'var(--green)':'#c05020';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ===== SCANNER =====
+let scannerTargetId=null;
+let scannerStream=null;
+let scannerCodeReader=null;
+
+async function openScanner(targetInputId){
+  if(typeof ZXing==='undefined'&&typeof BarcodeDetector==='undefined'){
+    showToast('⚠ Skener nedostupný — zadej EAN ručně',false);
+    return;
+  }
+  scannerTargetId=targetInputId;
+  document.getElementById('scanner-overlay').classList.add('open');
+  document.getElementById('scanner-result').classList.remove('show');
+  try{
+    // request camera
+    scannerStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}
+    });
+    const video=document.getElementById('scanner-video');
+    video.srcObject=scannerStream;
+    await video.play();
+    startDecoding(video);
+  }catch(err){
+    showToast('⚠ Kamera nedostupná: '+err.message,false);
+    closeScanner();
+  }
+}
+
+function startDecoding(video){
+  // Use ZXing if available, fallback to manual canvas scan
+  if(typeof ZXing!=='undefined'&&ZXing.BrowserMultiFormatReader){
+    scannerCodeReader=new ZXing.BrowserMultiFormatReader();
+    scannerCodeReader.decodeFromVideoElement(video,(result,err)=>{
+      if(result) onCodeDetected(result.getText());
+    });
+  } else {
+    // canvas fallback — scan frame every 300ms
+    const canvas=document.createElement('canvas');
+    const ctx=canvas.getContext('2d');
+    const tick=()=>{
+      if(!scannerStream)return;
+      if(video.readyState===video.HAVE_ENOUGH_DATA){
+        canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+        ctx.drawImage(video,0,0);
+        // BarcodeDetector API (supported in Chrome Android)
+        if('BarcodeDetector' in window){
+          new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','qr_code','upc_a','upc_e']})
+            .detect(canvas)
+            .then(barcodes=>{if(barcodes.length)onCodeDetected(barcodes[0].rawValue);})
+            .catch(()=>{});
+        }
+      }
+      if(document.getElementById('scanner-overlay').classList.contains('open'))
+        setTimeout(tick,300);
+    };
+    tick();
+  }
+}
+
+function onCodeDetected(code){
+  if(!code||!document.getElementById('scanner-overlay').classList.contains('open'))return;
+  // show result
+  const resultEl=document.getElementById('scanner-result');
+  document.getElementById('scanner-ean-text').textContent=code;
+  // check if product found in stock
+  const found=products.find(p=>p.variants.some(v=>v.ean===code));
+  document.getElementById('scanner-found-text').textContent=found
+    ?'✓ Nalezeno: '+found.brand+' '+found.name
+    :'Kód: '+code;
+  resultEl.classList.add('show');
+  // fill target input
+  const target=document.getElementById(scannerTargetId);
+  if(target){
+    target.value=code;
+    target.dispatchEvent(new Event('input'));
+  }
+  // short beep via AudioContext
+  try{
+    const ac=new AudioContext();
+    const osc=ac.createOscillator();
+    const gain=ac.createGain();
+    osc.connect(gain);gain.connect(ac.destination);
+    osc.frequency.value=1200;gain.gain.value=0.3;
+    osc.start();osc.stop(ac.currentTime+0.1);
+  }catch(e){}
+  // auto-close after 1.2s
+  setTimeout(()=>closeScanner(),1200);
+}
+
+function closeScanner(){
+  document.getElementById('scanner-overlay').classList.remove('open');
+  if(scannerCodeReader){try{scannerCodeReader.reset();}catch(e){}scannerCodeReader=null;}
+  if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null;}
+  document.getElementById('scanner-video').srcObject=null;
+}
+
+// ===== THEME =====
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  const isLight=document.body.classList.contains('light');
+  document.getElementById('theme-btn').textContent=isLight?'🌙':'☀️';
+  localStorage.setItem('sw_theme',isLight?'light':'dark');
+}
+function initTheme(){
+  const t=localStorage.getItem('sw_theme');
+  if(t==='light'){document.body.classList.add('light');document.getElementById('theme-btn').textContent='🌙';}
+  else document.getElementById('theme-btn').textContent='☀️';
+}
+
+// ===== PIN =====
+let pinBuffer='';
+let pinMode='unlock'; // 'unlock' | 'setup' | 'confirm'
+let pinSetupFirst='';
+
+function initPin(){
+  const pin=localStorage.getItem('sw_pin');
+  if(pin){
+    document.getElementById('pin-overlay').classList.remove('hidden');
+    document.getElementById('pin-overlay-sub').textContent='Zadejte PIN';
+    document.getElementById('pin-setup-link').style.display='block';
+    pinMode='unlock';
+  }
+}
+
+function pinKey(k){
+  if(pinBuffer.length>=4)return;
+  pinBuffer+=k;
+  updatePinDots();
+  if(pinBuffer.length===4){
+    setTimeout(()=>processPinInput(),150);
+  }
+}
+
+function pinDel(){
+  pinBuffer=pinBuffer.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots(error=false){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('pd-'+i);
+    d.classList.toggle('filled',i<pinBuffer.length);
+    d.classList.toggle('error',error);
+  }
+}
+
+function processPinInput(){
+  const stored=localStorage.getItem('sw_pin');
+  if(pinMode==='unlock'){
+    if(pinBuffer===stored){
+      document.getElementById('pin-overlay').classList.add('hidden');
+      pinBuffer='';updatePinDots();
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{pinBuffer='';updatePinDots();},600);
+      showToast('⚠ Špatný PIN',false);
+    }
+  } else if(pinMode==='setup'){
+    pinSetupFirst=pinBuffer;
+    pinBuffer='';
+    document.getElementById('pin-overlay-sub').textContent='Zadejte PIN znovu pro potvrzení';
+    updatePinDots();
+    pinMode='confirm';
+  } else if(pinMode==='confirm'){
+    if(pinBuffer===pinSetupFirst){
+      localStorage.setItem('sw_pin',pinBuffer);
+      document.getElementById('pin-overlay').classList.add('hidden');
+      pinBuffer='';pinSetupFirst='';pinMode='unlock';
+      updatePinDots();
+      updatePinStatus();
+      showToast('✓ PIN nastaven');
+    } else {
+      updatePinDots(true);
+      setTimeout(()=>{pinBuffer='';document.getElementById('pin-overlay-sub').textContent='Neshodují se, zkuste znovu';updatePinDots();},600);
+    }
+  }
+}
+
+function openPinSetup(){
+  pinBuffer='';pinSetupFirst='';pinMode='setup';
+  document.getElementById('pin-overlay-sub').textContent='Zvolte nový PIN (4 číslice)';
+  document.getElementById('pin-setup-link').style.display='none';
+  updatePinDots();
+  document.getElementById('pin-overlay').classList.remove('hidden');
+}
+
+function removePin(){
+  if(!confirm('Odebrat PIN zámek?'))return;
+  localStorage.removeItem('sw_pin');
+  updatePinStatus();
+  showToast('✓ PIN odebrán');
+}
+
+function pinForgot(){
+  if(confirm('Resetovat PIN? Ztratíte přístup pouze k PINu, data zůstanou.')){
+    localStorage.removeItem('sw_pin');
+    document.getElementById('pin-overlay').classList.add('hidden');
+    pinBuffer='';updatePinDots();
+  }
+}
+
+function updatePinStatus(){
+  const hasPin=!!localStorage.getItem('sw_pin');
+  const status=document.getElementById('pin-status');
+  const removeBtn=document.getElementById('pin-remove-btn');
+  if(status)status.textContent=hasPin?'✓ PIN je nastaven':'PIN není nastaven';
+  if(removeBtn)removeBtn.style.display=hasPin?'':'none';
+}
+
+// ===== BACKUP / RESTORE =====
+function backupData(){
+  backupVersion++;
+  localStorage.setItem('sw_backup_ver',backupVersion);
+  const data={
+    products,movements,customBrands,auditLog,
+    version:6,backupNumber:backupVersion,
+    date:new Date().toISOString(),
+    stats:{products:products.length,variants:products.flatMap(p=>p.variants).length,movements:movements.length}
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='sofwul_sklad_zaloha_#'+String(backupVersion).padStart(3,'0')+'_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  addAudit('záloha','Záloha #'+backupVersion+' stažena');
+  save();
+  showToast('✓ Záloha #'+backupVersion+' stažena');
+}
+
+function restoreData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.products||!Array.isArray(data.products))throw new Error('Neplatný formát');
+      restorePreviewData=data;
+      const d=new Date(data.date);
+      const dateStr=d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+      const stats=data.stats||{products:data.products.length,variants:data.products.flatMap(p=>p.variants||[]).length,movements:(data.movements||[]).length};
+      document.getElementById('restore-preview-content').innerHTML=
+        `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Datum zálohy</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;">${dateStr}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Číslo zálohy</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:var(--gold);">#${data.backupNumber||'—'}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Produktů</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--green);">${stats.products}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;">Pohybů</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--green);">${stats.movements}</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--red);background:rgba(224,85,85,.1);border:1px solid rgba(224,85,85,.2);border-radius:7px;padding:8px 10px;">
+          ⚠ Aktuální data budou přepsána (${products.length} produktů, ${movements.length} pohybů)
+        </div>`;
+      document.getElementById('restore-preview-overlay').classList.add('open');
+    }catch(err){
+      showToast('⚠ Chyba: '+err.message,false);
+    }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function confirmRestore(){
+  if(!restorePreviewData)return;
+  products=restorePreviewData.products||[];
+  movements=restorePreviewData.movements||[];
+  customBrands=restorePreviewData.customBrands||{};
+  auditLog=restorePreviewData.auditLog||[];
+  if(restorePreviewData.backupNumber)backupVersion=restorePreviewData.backupNumber;
+  addAudit('obnova','Data obnovena ze zálohy #'+(restorePreviewData.backupNumber||'?'));
+  save();
+  document.getElementById('restore-preview-overlay').classList.remove('open');
+  restorePreviewData=null;
+  renderList();renderStats();
+  showToast('✓ Data obnovena ze zálohy');
+}
+
+function cancelRestore(){
+  restorePreviewData=null;
+  document.getElementById('restore-preview-overlay').classList.remove('open');
+}
+
+// ===== NOVÝ PRODUKT V DODÁVCE =====
+let newProdDept=null;
+
+function toggleNewProdForm(){
+  const f=document.getElementById('new-prod-form');
+  f.classList.toggle('open');
+  if(f.classList.contains('open')){
+    newProdDept=null;
+    document.getElementById('npf-brand').value='';
+    document.getElementById('npf-name').value='';
+    document.getElementById('npf-ean').value='';
+    document.getElementById('npf-price').value='';
+    document.getElementById('npf-qty').value='1';
+    document.getElementById('npf-note').value='';
+    document.getElementById('npf-attrs-container').innerHTML='';
+    document.querySelectorAll('.new-prod-dept-btn').forEach(b=>b.classList.remove('selected'));
+  }
+}
+
+function selNewProdDept(dept,el){
+  newProdDept=dept;
+  document.querySelectorAll('.new-prod-dept-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  // render attribute inputs for this dept
+  const attrs=DEPT_ATTRS[dept]||[];
+  const container=document.getElementById('npf-attrs-container');
+  if(!attrs.length){container.innerHTML='';return;}
+  const primary=attrs.filter(a=>a.primary);
+  const secondary=attrs.filter(a=>!a.primary);
+  let html='<div class="new-prod-sep"></div><div class="npf-lbl" style="margin-bottom:6px;">Atributy varianty</div>';
+  const allAttrs=[...primary,...secondary];
+  html+='<div class="npf-row">';
+  allAttrs.forEach((a,i)=>{
+    if(i>0&&i%2===0)html+='</div><div class="npf-row">';
+    html+=`<div><div class="npf-lbl">${a.label}${a.primary?' *':''}</div><input class="npf-inp" type="text" id="npf-attr-${a.id}" placeholder="${a.placeholder||a.label}"></div>`;
+  });
+  if(allAttrs.length%2===1)html+='<div></div>';
+  html+='</div><div class="new-prod-sep"></div>';
+  container.innerHTML=html;
+}
+
+function addNewProdToBatch(){
+  const brand=(document.getElementById('npf-brand').value||'').trim();
+  const name=(document.getElementById('npf-name').value||'').trim();
+  const qty=parseInt(document.getElementById('npf-qty').value)||1;
+  if(!newProdDept){showToast('⚠ Vyber oddělení',false);return;}
+  if(!brand){showToast('⚠ Zadej značku',false);return;}
+  if(!name){showToast('⚠ Zadej název produktu',false);return;}
+  if(qty<1){showToast('⚠ Množství musí být alespoň 1',false);return;}
+
+  const attrs=DEPT_ATTRS[newProdDept]||[];
+  const variantData={};
+  let missingPrimary=false;
+  attrs.forEach(a=>{
+    const val=(document.getElementById('npf-attr-'+a.id)?.value||'').trim();
+    if(a.primary&&!val){missingPrimary=true;}
+    variantData[a.id]=val;
+  });
+  // only block if dept has primary attrs defined
+  const hasPrimaryAttrs=attrs.some(a=>a.primary);
+  if(hasPrimaryAttrs&&missingPrimary){showToast('⚠ Vyplň povinné atributy varianty',false);return;}
+
+  const ean=(document.getElementById('npf-ean').value||'').trim();
+  const price=parseFloat(document.getElementById('npf-price').value)||0;
+  const note=(document.getElementById('npf-note').value||'').trim();
+
+  // build label
+  const primaryAttrs=attrs.filter(a=>a.primary);
+  const usedAttrs=primaryAttrs.length?primaryAttrs:attrs;
+  const varLabel=usedAttrs.map(a=>variantData[a.id]).filter(Boolean).join(' / ')||'Výchozí';
+
+  const tempId='new_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+  batchItems.push({
+    isNew:true,
+    tempId,
+    dept:newProdDept,
+    brand,name,
+    variantData,varLabel,
+    ean,price,note,
+    qty,
+    product:brand+' '+name,
+    variant:varLabel
+  });
+  renderBatchList();
+  // close & reset form
+  document.getElementById('new-prod-form').classList.remove('open');
+  showToast('✓ Nový produkt přidán do dodávky');
+}
+
+// ===== BATCH NASKLADNĚNÍ =====
+let batchItems=[];
+
+function renderBatchSearch(){
+  const q=(document.getElementById('batch-search')?.value||'').toLowerCase();
+  const container=document.getElementById('batch-search-results');
+  if(!q){container.innerHTML='';return;}
+  const results=[];
+  products.forEach(p=>{
+    const attrs=DEPT_ATTRS[p.dept]||[];
+    p.variants.forEach((v,vi)=>{
+      const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+      const searchStr=(p.brand+' '+p.name+' '+varLabel+' '+(v.ean||'')).toLowerCase();
+      if(searchStr.includes(q)) results.push({p,v,vi,varLabel});
+    });
+  });
+  if(!results.length){container.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Nic nenalezeno.</div>';return;}
+  container.innerHTML=results.slice(0,8).map(({p,v,vi,varLabel})=>{
+    const d=DEPTS[p.dept];
+    return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="addToBatch(${p.id},${vi})">
+      <span style="font-size:18px;">${d?.icon||'📦'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;">${p.brand} ${p.name}</div>
+        <div style="font-size:11px;color:var(--text-dim);">${varLabel} · ${v.qty} ks na skladě</div>
+      </div>
+      <button style="background:var(--gold);color:#0e0e0f;border:none;border-radius:7px;padding:6px 12px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer;">＋</button>
+    </div>`;
+  }).join('');
+}
+
+function addToBatch(productId,vi){
+  const p=products.find(x=>x.id===productId);if(!p)return;
+  const v=p.variants[vi];
+  const attrs=DEPT_ATTRS[p.dept]||[];
+  const varLabel=attrs.map(a=>v[a.id]).filter(Boolean).join(' / ')||'—';
+  const existing=batchItems.find(b=>b.productId===productId&&b.variantIdx===vi);
+  if(existing){existing.qty++;renderBatchList();showToast('✓ Množství zvýšeno');return;}
+  batchItems.push({productId,variantIdx:vi,qty:1,product:p.brand+' '+p.name,variant:varLabel,price:v.price});
+  renderBatchList();
+  document.getElementById('batch-search').value='';
+  document.getElementById('batch-search-results').innerHTML='';
+  showToast('✓ Přidáno: '+p.name);
+}
+
+function renderBatchList(){
+  const list=document.getElementById('batch-list');
+  const btn=document.getElementById('batch-submit-btn');
+  if(!batchItems.length){
+    list.innerHTML='<div style="font-size:12px;color:var(--text-dim);padding:8px 0;">Přidej produkty ze skladu nebo nový produkt níže.</div>';
+    btn.disabled=true;return;
+  }
+  list.innerHTML=batchItems.map((b,i)=>`
+    <div class="batch-item${b.isNew?' batch-item-new':''}">
+      <div class="batch-item-info">
+        <div class="batch-item-name">${b.product}${b.isNew?'<span class="bnp-new-badge">NOVÝ</span>':''}</div>
+        <div class="batch-item-detail">${b.variant}${b.price?' · '+b.price.toLocaleString('cs-CZ')+' Kč':''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);width:26px;height:26px;cursor:pointer;font-size:14px;" onclick="batchQty(${i},-1)">−</button>
+        <span class="batch-item-qty">${b.qty}</span>
+        <button style="background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);width:26px;height:26px;cursor:pointer;font-size:14px;" onclick="batchQty(${i},1)">+</button>
+      </div>
+      <button class="batch-remove" onclick="batchItems.splice(${i},1);renderBatchList()">×</button>
+    </div>`).join('');
+  btn.disabled=false;
+}
+
+function batchQty(i,delta){
+  batchItems[i].qty=Math.max(1,batchItems[i].qty+delta);
+  renderBatchList();
+}
+
+function saveBatch(){
+  if(!batchItems.length)return;
+  const deliveryNote=document.getElementById('batch-delivery-note').value.trim();
+  const now=new Date();
+  const nowISO=now.toISOString();
+  let newCount=0;
+  batchItems.forEach(b=>{
+    if(b.isNew){
+      const productId=Date.now()*1000+Math.floor(Math.random()*999);
+      const attrs=DEPT_ATTRS[b.dept]||[];
+      const attrData=b.variantData||b.attrVals||{};
+      const variant={qty:b.qty,price:b.price||0,ean:b.ean||'',note:b.note||'',dateIn:nowISO,...attrData};
+      const primaryA=attrs.filter(a=>a.primary);
+      const useA=primaryA.length?primaryA:attrs;
+      const varLabel=useA.map(a=>variant[a.id]).filter(Boolean).join(' / ')||'Výchozí';
+      const newProduct={id:productId,dept:b.dept,brand:b.brand,name:b.name,note:b.note||'',photo:null,variants:[variant]};
+      products.unshift(newProduct);
+      movements.unshift({
+        id:Date.now()+Math.random(),type:'naskladneni',
+        productId,variantIdx:0,
+        product:b.brand+' '+b.name,variant:varLabel,
+        qty:b.qty,price:b.price||0,
+        note:deliveryNote?'Dodávka: '+deliveryNote:'',
+        date:nowISO
+      });
+      addAudit('naskladnění','Nový produkt z dodávky: '+b.brand+' '+b.name+' ('+b.qty+' ks)');
+      newCount++;
+    } else {
+      const p=products.find(x=>x.id===b.productId);if(!p)return;
+      const v=p.variants[b.variantIdx];
+      v.qty+=b.qty;
+      v.dateIn=nowISO;
+      movements.unshift({
+        id:Date.now()+Math.random(),type:'naskladneni',
+        productId:b.productId,variantIdx:b.variantIdx,
+        product:b.product,variant:b.variant,
+        qty:b.qty,price:b.price,
+        note:deliveryNote?'Dodávka: '+deliveryNote:'',
+        date:nowISO
+      });
+    }
+  });
+  save();
+  const count=batchItems.length;
+  clearBatch();
+  const msg=newCount>0?'✓ Naskladněno '+count+' položek ('+newCount+' nových produktů)':'✓ Naskladněno '+count+' položek';
+  showToast(msg);
+  renderList();renderStats();
+  checkStorageWarning();
+  switchTab('seznam');
+  showBackupPrompt('Naskladněno '+count+' položek z dodávky. Záloha chrání tvá data.');
+}
+
+function clearBatch(){
+  batchItems=[];
+  document.getElementById('batch-delivery-note').value='';
+  document.getElementById('batch-search').value='';
+  document.getElementById('batch-search-results').innerHTML='';
+  renderBatchList();
+}
+
+// ===== PWA MANIFEST =====
+function initPWA(){
+  const manifest={
+    name:'Sofwul Sklad',short_name:'Sklad',
+    start_url:window.location.href,
+    display:'standalone',
+    background_color:'#0e0e0f',theme_color:'#0e0e0f',
+    icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%230e0e0f"/><text y=".9em" font-size="80">📦</text></svg>',sizes:'any',type:'image/svg+xml'}]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+  // service worker
+  if('serviceWorker' in navigator){
+    const sw=`
+      const CACHE='sofwul-v6';
+      self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll([self.location.href]))));
+      self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match(e.request)))));
+    `;
+    const swBlob=new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+  }
+}
+
+// ===== PÁTEČNÍ PŘIPOMÍNKA =====
+function checkDataLossWarning(){
+  // Upozornění pokud nebyla záloha > 14 dní
+  if(!products.length)return; // prázdný sklad — neupozorňovat
+  const lastBackup=auditLog.find(a=>a.action==='záloha');
+  if(!lastBackup)return; // nikdy nezálohoval — páteční připomínka to pokryje
+  const daysSince=Math.floor((Date.now()-new Date(lastBackup.date).getTime())/(1000*60*60*24));
+  if(daysSince>14){
+    setTimeout(()=>showToast(`⚠ Záloha stará ${daysSince} dní — stáhni zálohu!`,false),2000);
+  }
+}
+
+function checkFridayReminder(){
+  const today=new Date();
+  if(today.getDay()!==5)return; // 5 = pátek
+  const lastShown=localStorage.getItem('sw_friday_reminder');
+  const todayStr=today.toISOString().slice(0,10);
+  if(lastShown===todayStr)return; // už dnes zobrazeno
+  // zobrazit po 1s (aby se nejdřív načetl PIN pokud je nastaven)
+  setTimeout(()=>{
+    if(!document.getElementById('pin-overlay').classList.contains('hidden'))return;
+    document.getElementById('friday-overlay').classList.add('open');
+  },1000);
+}
+function closeFridayReminder(){
+  document.getElementById('friday-overlay').classList.remove('open');
+  localStorage.setItem('sw_friday_reminder',new Date().toISOString().slice(0,10));
+}
+
+function showBackupPrompt(msg){
+  document.getElementById('backup-prompt-sub').textContent=msg||'Doporučujeme stáhnout zálohu — máš nová data na skladě.';
+  setTimeout(()=>document.getElementById('backup-prompt-overlay').classList.add('open'),400);
+}
+function closeBackupPrompt(){
+  document.getElementById('backup-prompt-overlay').classList.remove('open');
+}
+
+// ===== KOŠ =====
+function openTrash(){
+  // vyčistit expirované položky
+  const now=Date.now();
+  trash=trash.filter(t=>new Date(t.expiresAt).getTime()>now);
+  save();
+  const list=document.getElementById('trash-list');
+  if(!trash.length){
+    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:13px;">Koš je prázdný</div>';
+  } else {
+    list.innerHTML=trash.map((t,i)=>{
+      const exp=new Date(t.expiresAt);
+      const daysLeft=Math.ceil((exp-now)/(1000*60*60*24));
+      return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(224,85,85,.15);color:var(--red);border:1px solid rgba(224,85,85,.3);">${t.type==='produkt'?'Produkt':'Varianta'}</span>
+          <span style="font-size:12px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.productName}</span>
+          <span style="font-size:10px;color:var(--text-dim);">${daysLeft}d</span>
+        </div>
+        ${t.varLabel?`<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">${t.varLabel}</div>`:''}
+        <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">Smazáno: ${new Date(t.deletedAt).toLocaleDateString('cs-CZ')}</div>
+        <button onclick="restoreFromTrash(${i})" style="width:100%;padding:8px;background:var(--green);color:#fff;border:none;border-radius:7px;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;cursor:pointer;">↩ Obnovit</button>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('trash-overlay').classList.add('open');
+  updateTrashStatus();
+}
+
+function restoreFromTrash(i){
+  const t=trash[i];
+  if(t.type==='produkt'&&t.fullProduct){
+    // obnovit celý produkt
+    products.unshift(t.fullProduct);
+    addAudit('obnova z koše','Produkt: '+t.productName);
+  } else if(t.type==='varianta'){
+    // obnovit variantu do původního produktu
+    const p=products.find(x=>x.id===t.productId);
+    if(p){p.variants.splice(t.variantIdx,0,t.variant);addAudit('obnova z koše','Varianta: '+t.productName+' / '+t.varLabel);}
+    else {showToast('⚠ Produkt již neexistuje',false);return;}
+  }
+  trash.splice(i,1);
+  save();renderList();openTrash();
+  showToast('✓ Obnoveno z koše');
+}
+
+function closeTrash(e){if(e&&e.target!==document.getElementById('trash-overlay'))return;document.getElementById('trash-overlay').classList.remove('open');}
+
+function updateTrashStatus(){
+  const now=Date.now();
+  const valid=trash.filter(t=>new Date(t.expiresAt).getTime()>now);
+  const el=document.getElementById('trash-status');
+  if(el)el.textContent=valid.length?valid.length+' položek (30 dní na obnovu)':'Koš je prázdný';
+}
+
+// ===== AUDIT LOG =====
+function openAudit(){
+  const list=document.getElementById('audit-list');
+  if(!auditLog.length){
+    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-dim);font-size:13px;">Žádné záznamy</div>';
+  } else {
+    const actionColors={
+      'záloha':'var(--green)','obnova':'var(--blue, #5588cc)',
+      'smazání':'var(--red)','přejmenování':'var(--gold)',
+      'úprava varianty':'var(--gold)','obnova z koše':'var(--green)'
+    };
+    list.innerHTML=auditLog.slice(0,100).map(a=>{
+      const d=new Date(a.date);
+      const dateStr=d.toLocaleDateString('cs-CZ')+' '+d.toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});
+      const color=actionColors[a.action]||'var(--text-dim)';
+      return`<div style="display:flex;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span style="font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.06em;">${a.action}</span>
+            <span style="font-size:10px;color:var(--text-dim);">${dateStr}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.detail}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('audit-overlay').classList.add('open');
+  updateAuditStatus();
+}
+
+function closeAudit(e){if(e&&e.target!==document.getElementById('audit-overlay'))return;document.getElementById('audit-overlay').classList.remove('open');}
+
+function updateAuditStatus(){
+  const el=document.getElementById('audit-status');
+  if(el)el.textContent=auditLog.length?auditLog.length+' záznamů':'Žádné záznamy';
+}
+
+function updateMovesStatus(){
+  const el=document.getElementById('moves-status');
+  if(el)el.textContent=movements.length?movements.length+' pohybů':'Žádné pohyby';
+}
+
+function clearAuditLog(){
+  document.getElementById('clear-audit-overlay').classList.add('open');
+}
+function clearAuditLogConfirm(){
+  document.getElementById('clear-audit-overlay').classList.remove('open');
+  const count=auditLog.length;
+  auditLog=[];
+  save();
+  updateAuditStatus();
+  showToast('✓ Audit log vymazán ('+count+' záznamů)');
+}
+function clearAuditLogCancel(){
+  document.getElementById('clear-audit-overlay').classList.remove('open');
+}
+
+function clearMovements(){
+  document.getElementById('clear-moves-overlay').classList.add('open');
+}
+function clearMovementsConfirm(){
+  document.getElementById('clear-moves-overlay').classList.remove('open');
+  const count=movements.length;
+  movements=[];
+  save();
+  updateMovesStatus();
+  renderHistory();
+  showToast('✓ Historie pohybů vymazána ('+count+' záznamů)');
+}
+function clearMovementsCancel(){
+  document.getElementById('clear-moves-overlay').classList.remove('open');
+}
+
+function resetAllData(){
+  // custom modal místo confirm() který může být blokován
+  document.getElementById('reset-confirm-overlay').classList.add('open');
+}
+function resetAllDataConfirm(){
+  document.getElementById('reset-confirm-overlay').classList.remove('open');
+  products=[];movements=[];trash=[];auditLog=[];
+  ['sw_v4','sw_brands_v4','sw_moves_v5','sw_trash_v6','sw_audit_v6','sw_backup_ver','sw_friday_reminder'].forEach(k=>localStorage.removeItem(k));
+  save();
+  renderList();renderStats();
+  updateTrashStatus();updateAuditStatus();updateMovesStatus();
+  showToast('✓ Všechna data vymazána');
+}
+function resetAllDataCancel(){
+  document.getElementById('reset-confirm-overlay').classList.remove('open');
+}
+
+// Prázdný sklad — připraven pro ostrý provoz
+
+renderList();
+updateDeptCounts();
+initTheme();
+initPin();
+initPWA();
+updatePinStatus();
+updateTrashStatus();
+updateAuditStatus();
+checkFridayReminder();
+checkStorageWarning();
+checkDataLossWarning();
+</script>
+</body>
+</html>
